@@ -1,0 +1,910 @@
+{
+  "openapi": "3.0.0",
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/",
+      "variables": {}
+    }
+  ],
+  "info": {
+    "title": "Backend API for food project",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "Public",
+      "description": "Information about recipes, ingredient and other public routes"
+    },
+    {
+      "name": "Authenticated user",
+      "description": "Information about authenticated users"
+    },
+    {
+      "name": "Admin",
+      "description": "Information about admin routes"
+    }
+  ],
+  "paths": {
+    "/public/recipe/{recipeID}": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get a recipe by ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipeID",
+            "description": "Identifier of the recipe",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipe not found"
+          }
+        }
+      }
+    },
+    "/public/recipes/by/keywords": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Get recipes by keywords",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Keywords to search for matching recipes",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "keywords": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForList"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/recipes/by/ingredients": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Get recipes by ingredients",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Ingredients identifier to search for matching recipes",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForList"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/ingredient/{ingredientID}": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get an ingredient by ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredientID",
+            "description": "Identifier of the ingredient",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ingredient"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ingredient not found"
+          }
+        }
+      }
+    },
+    "/public/ingredient/by/name/{name}": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get an ingredient by name",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "description": "Name of the ingredient",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ingredient"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/register": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Register to the service",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create a new user",
+            "required": true,
+            "schema": {"$ref": "#/definitions/User"}
+
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {"type": "string", "description": "Auth Token"}
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden: An user with this email address already exist"
+          }
+        }
+      }
+    },
+    "/public/login": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Login to the service",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create a new user",
+            "required": true,
+            "schema": {"$ref": "#/definitions/User"}
+
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {"type": "string", "description": "Auth Token"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/user/profile/me": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Get the profile of the connected user",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Update the profile of the authenticated user",
+        "consumes": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Update the user information",
+            "required": true,
+            "schema": {"$ref": "#/definitions/User"}
+
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile update"
+          }
+        }
+      }
+    },
+    "/user/savedrecipes": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Get the saved recipes of the connected user",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForList"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/save/recipe/{recipeID}": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Add the recipe to the saved recipes of the connected user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipeID",
+            "description": "Identifier of the recipe",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe saved"
+          },
+          "404": {
+            "description": "Recipe not found"
+          }
+        }
+      }
+    },
+    "/user/savedrecipes/{recipeID}": {
+      "delete": {
+        "tags": ["Authenticated user"],
+        "summary": "Remove the recipe from the saved recipes of the connected user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipeID",
+            "description": "Identifier of the recipe",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe removed"
+          },
+          "404": {
+            "description": "Recipe not found"
+          }
+        }
+      }
+    },
+    "/user/shoppinglist": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Get the shopping list of the connected user",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShoppingList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/shoppinglist/item": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Add a new item to the shopping list of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Item object that needs to be added to the shopping list",
+            "required": true,
+            "schema": {"$ref": "#/definitions/Item"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {"type": "string", "description": "Identifier of the item"}
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/user/shoppinglist/item/{itemID}": {
+      "delete": {
+        "tags": ["Authenticated user"],
+        "summary": "Delete an item from the shopping list of the connected user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "itemID",
+            "description": "Identifier of the item object that needs to be removed from the shopping list",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item removed"
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
+    "/user/fridge": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Get the fridge of the connected user",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/fridge/item": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Add a new item to the fridge of the connected user",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Item object that needs to be added to the fridge",
+            "required": true,
+            "schema": {"$ref": "#/definitions/Item"}
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {"type": "string", "description": "Identifier of the item"}
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/user/fridge/item/{itemID}": {
+      "delete": {
+        "tags": ["Authenticated user"],
+        "summary": "Delete an item from the fridge of the connected user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "itemID",
+            "description": "Identifier of the item object that needs to be removed from the fridge",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item removed"
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
+    "/admin/set/user/{userID}/admin": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Set an user as admin",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userID",
+            "description": "ID of the user to set as admin",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation succeeded"
+          }
+        }
+      }
+    },
+    "/admin/add/recipe": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Add a recipe to the database",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Recipe to add to the database",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Recipe"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe added"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {"type": "string"},
+        "password": {"type": "string"}
+      },
+      "required": [
+        "email",
+        "password"
+      ]
+    },
+    "Item": {
+      "type": "object",
+      "properties": {
+        "ingredientID": {"type": "string"},
+        "quantity": {"type": "number"},
+        "unit": {"type": "string"}
+      },
+      "required": [
+        "ingredientID"
+      ]
+    },
+    "Recipe": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "author": {"type": "string"},
+        "budget": {"type": "string"},
+        "difficulty": {"type": "string"},
+        "recipeQuantity": {
+          "type": "object",
+          "properties": {
+            "unit": {"type": "string"},
+            "value": {"type": "number"}
+          }
+        },
+        "fame": {"type": "number"},
+        "picture": {"type": "string"},
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "display": {"type": "string"},
+              "ingredient": {"type": "string"},
+              "quantity": {"type": "number"},
+              "unit": {"type": "string"},
+              "complement": {"type": "string"},
+              "picture": {"type": "string"}
+            }
+          }
+        },
+        "utensils": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "utensil": {"type": "string"},
+              "picture": {"type": "string"}
+            }
+          }
+        },
+        "recipe": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "totalTime": {"type": "number"},
+        "timingDetails": {
+          "type": "object",
+          "properties": {
+            "preparation": {"type": "number"},
+            "cooking": {"type": "number"},
+            "rest": {"type": "number"}
+          }
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "RecipeForList": {
+      "type": "object",
+      "properties": {
+        "recipeID": {"type": "string"},
+        "title": {"type": "number"},
+        "picture": {"type": "string"}
+      },
+      "required": [
+        "ingredientID"
+      ]
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Fridge": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Item"}
+          }
+        }
+      },
+      "Ingredient": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "recipe": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "required": [
+          "_id",
+          "name"
+        ]
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "ingredientID": {"type": "string"},
+          "ingredientName": {"type": "string"},
+          "quantity": {"type": "number"},
+          "unit": {"type": "string"}
+        }
+      },
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "title": {"type": "string"},
+          "author": {"type": "string"},
+          "budget": {"type": "string"},
+          "difficulty": {"type": "string"},
+          "recipeQuantity": {
+            "type": "object",
+            "properties": {
+              "unit": {"type": "string"},
+              "value": {"type": "number"}
+            }
+          },
+          "fame": {"type": "number"},
+          "picture": {"type": "string"},
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "display": {"type": "string"},
+                "ingredient": {"type": "string"},
+                "quantity": {"type": "number"},
+                "unit": {"type": "string"},
+                "complement": {"type": "string"},
+                "picture": {"type": "string"}
+              }
+            }
+          },
+          "utensils": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "utensil": {"type": "string"},
+                "picture": {"type": "string"}
+              }
+            }
+          },
+          "recipe": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "totalTime": {"type": "number"},
+          "timingDetails": {
+            "type": "object",
+            "properties": {
+              "preparation": {"type": "number"},
+              "cooking": {"type": "number"},
+              "rest": {"type": "number"}
+            }
+          }
+        },
+        "required": [
+          "_id",
+          "title"
+        ]
+      },
+      "ShoppingList": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

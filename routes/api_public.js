@@ -22,7 +22,19 @@ router.get('/recipe/:recipeID', function(req, res) {
     })
 })
 
+router.post('/recipes/summary', function(req, res) {
+    Recipe.find({_id: { $in: req.body.recipes}}).select(
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        if(err || !recipes) {
+            res.status(404).send("Recipes not found")
+            return
+        }
+        res.json(recipes)
+    })
+})
+
 router.post('/recipes/by/keywords', function(req, res) {
+    // Need elastic search
     res.json([])
 })
 

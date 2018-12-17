@@ -17,6 +17,27 @@ const UserSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
+    },
+    savedRecipes: {
+        type: [{
+            recipeID: mongoose.Schema.Types.ObjectId,
+            savingDate: Date
+        }]
+    },
+    shoppingList: {
+        type: [{
+            ingredientID: mongoose.Schema.Types.ObjectId,
+            quantity: Number,
+            unit: String
+        }]
+    },
+    fridge: {
+        type: [{
+            ingredientID: mongoose.Schema.Types.ObjectId,
+            quantity: Number,
+            unit: String,
+            expirationDate: Date
+        }]
     }
 })
 

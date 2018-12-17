@@ -56,6 +56,43 @@
         }
       }
     },
+    "/public/recipes/summary": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Get recipes summary",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipes ID",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForList"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/recipes/by/keywords": {
       "post": {
         "tags": ["Public"],
@@ -100,11 +137,16 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Ingredients identifier to search for matching recipes",
+            "description": "Ingredients ID to search for matching recipes",
             "required": true,
             "schema": {
-              "type": "array",
-              "items": {"type": "string"}
+              "type": "object",
+              "properties": {
+                "ingredients": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
             }
           }
         ],
@@ -198,19 +240,10 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "token": {"type": "string", "description": "Auth Token"}
-                  }
-                }
-              }
-            }
+            "description": "Registration succeeded"
           },
           "403": {
-            "description": "Forbidden: An user with this email address already exist"
+            "description": "User already exists"
           }
         }
       }

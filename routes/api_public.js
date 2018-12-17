@@ -6,6 +6,8 @@ import User from '../models/user'
 import Recipe from '../models/recipe'
 import Ingredient from '../models/ingredients'
 
+import {getRecipesByIngredients} from './utils'
+
 import config from '../config'
 
 const router = express.Router()
@@ -23,27 +25,6 @@ router.get('/recipe/:recipeID', function(req, res) {
 router.post('/recipes/by/keywords', function(req, res) {
     res.json([])
 })
-
-const getRecipesByIngredients = async function(ingredientIDs) {
-    // next step do TF-IDF
-    let recipes = {}
-    for (const id of ingredientIDs) {
-        const ingredient = await Ingredient.findById(id).exec()
-        if(ingredient) {
-            for (const recipe of ingredient.recipes) {
-                if (!recipes.hasOwnProperty(recipe)) {
-                    recipes[recipe] = 0
-                }
-                recipes[recipe]++
-            }
-        }
-    }
-    let sortable = []
-    for (const recipe in recipes) {
-        sortable.push([recipe, recipes[recipe]])
-    }
-    return sortable.sort(function(a, b) { return b[1] - a[1] })
-}
 
 router.post('/recipes/by/ingredients', async function(req, res) {
     const recipes = await getRecipesByIngredients(req.body.ingredients)

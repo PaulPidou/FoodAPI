@@ -2,6 +2,35 @@ import mongoose from 'mongoose'
 import passportLocalMongoose from 'passport-local-mongoose'
 import bcrypt from 'bcryptjs'
 
+const ShoppingItem = new mongoose.Schema({
+    ingredientID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    quantity: {
+        type: Number
+    },
+    unit: {
+        type: String
+    }
+}, { _id : false })
+
+const FridgeItem = new mongoose.Schema({
+    ingredientID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    quantity: {
+        type: Number
+    },
+    unit: {
+        type: String
+    },
+    expirationDate: {
+        type: Date
+    }
+}, { _id : false })
+
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -24,21 +53,8 @@ const UserSchema = new mongoose.Schema({
             savingDate: Date
         }]
     },
-    shoppingList: {
-        type: [{
-            ingredientID: mongoose.Schema.Types.ObjectId,
-            quantity: Number,
-            unit: String
-        }]
-    },
-    fridge: {
-        type: [{
-            ingredientID: mongoose.Schema.Types.ObjectId,
-            quantity: Number,
-            unit: String,
-            expirationDate: Date
-        }]
-    }
+    shoppingList: [ShoppingItem],
+    fridge: [FridgeItem]
 })
 
 UserSchema.pre('save', function(next) {

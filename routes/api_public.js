@@ -15,7 +15,7 @@ const router = express.Router()
 router.get('/recipe/:recipeID', function(req, res) {
     Recipe.findById(req.params.recipeID).exec(function(err, recipe) {
         if(err || !recipe) {
-            res.status(404).send("Recipe not found")
+            res.status(404).json({message: "Recipe not found"})
             return
         }
         res.json(recipe)
@@ -26,7 +26,7 @@ router.post('/recipes/summary', function(req, res) {
     Recipe.find({_id: { $in: req.body.recipes}}).select(
         {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
         if(err || !recipes) {
-            res.status(404).send("Recipes not found")
+            res.status(404).json({message: "Recipes not found"})
             return
         }
         res.json(recipes)
@@ -46,7 +46,7 @@ router.post('/recipes/by/ingredients', async function(req, res) {
 router.get('/ingredient/:ingredientID', function(req, res) {
     Ingredient.findById(req.params.ingredientID).exec(function(err, ingredient) {
         if(err || !ingredient) {
-            res.status(404).send("Ingredient not found")
+            res.status(404).json({message: "Ingredient not found"})
             return
         }
         res.json(ingredient)
@@ -56,10 +56,21 @@ router.get('/ingredient/:ingredientID', function(req, res) {
 router.get('/ingredient/by/name/:name', function(req, res) {
     Ingredient.findOne({name: req.params.name}).exec(function(err, ingredient) {
         if(err || !ingredient) {
-            res.status(404).send("Ingredient not found")
+            res.status(404).json({message: "Ingredient not found"})
             return
         }
         res.json(ingredient)
+    })
+})
+
+router.get('/ingredients/by/autocompletion/:term', function(req, res) {
+    const regex = new RegExp('^' + req.params.term)
+    Ingredient.find({name: regex}, {name: 1}).exec(function(err, ingredients) {
+        if(err || !ingredients) {
+            res.json([])
+            return
+        }
+        res.json(ingredients)
     })
 })
 

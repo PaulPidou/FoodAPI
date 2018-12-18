@@ -23,6 +23,7 @@ const sortAndLimit = function(obj, filterKey, limit) {
     return objToReturn
 }
 
+// Public
 export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=100) {
     let scores = {}
     for (const id of ingredientIDs) {

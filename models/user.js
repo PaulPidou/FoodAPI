@@ -13,7 +13,7 @@ const ShoppingItem = new mongoose.Schema({
     unit: {
         type: String
     }
-}, { _id : false })
+})
 
 const FridgeItem = new mongoose.Schema({
     ingredientID: {
@@ -29,7 +29,7 @@ const FridgeItem = new mongoose.Schema({
     expirationDate: {
         type: Date
     }
-}, { _id : false })
+})
 
 const UserSchema = new mongoose.Schema({
     email: {
@@ -49,6 +49,7 @@ const UserSchema = new mongoose.Schema({
     },
     savedRecipes: {
         type: [{
+            _id:false,
             recipeID: mongoose.Schema.Types.ObjectId,
             savingDate: Date
         }]

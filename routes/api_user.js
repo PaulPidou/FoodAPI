@@ -17,12 +17,14 @@ router.get('/savedrecipes', function(req, res) {
 router.get('/save/recipe/:recipeID', function(req, res) {
     Recipe.findById(req.params.recipeID).exec(async function(err, recipe) {
         if(err || !recipe) {
-            return res.status(404).json({message: "Recipe not found"})
+            res.status(404).json({message: "Recipe not found"})
+            return
         }
 
         for (const recipe of req.user.savedRecipes) {
             if (recipe.recipeID.toString() === req.params.recipeID) {
-                return res.status(403).json({message: "Recipe already saved"})
+                res.status(403).json({message: "Recipe already saved"})
+                return
             }
         }
 
@@ -40,7 +42,8 @@ router.delete('/savedrecipes/:recipeID', async function(req, res) {
         { $pull: { "savedRecipes": {"recipeID": req.params.recipeID}}}, {'new': true}
         ).exec(function(err, user) {
             if (err || !user) {
-                return res.status(404).json({message: "Recipe not found"})
+                res.status(404).json({message: "Recipe not found"})
+                return
             }
         res.json({message: "Recipe removed"})
     })
@@ -53,7 +56,8 @@ router.get('/shoppinglist', function(req, res) {
 router.post('/shoppinglist/item', function(req, res) {
     Ingredient.findById(req.body.ingredientID).exec(async function(err, ingredient) {
         if(err || !ingredient) {
-            return res.status(422).json({message: "Ingredient not found"})
+            res.status(422).json({message: "Ingredient not found"})
+            return
         }
 
         req.user.shoppingList.push({
@@ -71,7 +75,8 @@ router.delete('/shoppinglist/item/:itemID', function(req, res) {
         { $pull: { "shoppingList": {"_id": req.params.itemID}}}, {'new': true}
     ).exec(function(err, user) {
         if (err || !user) {
-            return res.status(404).json({message: "Item not found"})
+            res.status(404).json({message: "Item not found"})
+            return
         }
         res.json({message: "Item removed"})
     })
@@ -84,7 +89,8 @@ router.get('/fridge', function(req, res) {
 router.post('/fridge/item', function(req, res) {
     Ingredient.findById(req.body.ingredientID).exec(async function(err, ingredient) {
         if(err || !ingredient) {
-            return res.status(422).json({message: "Ingredient not found"})
+            res.status(422).json({message: "Ingredient not found"})
+            return
         }
 
         req.user.shoppingList.push({
@@ -103,7 +109,8 @@ router.delete('/fridge/item/:itemID', function(req, res) {
         { $pull: { "shoppingList": {"_id": req.params.itemID}}}, {'new': true}
     ).exec(function(err, user) {
         if (err || !user) {
-            return res.status(404).json({message: "Item not found"})
+            res.status(404).json({message: "Item not found"})
+            return
         }
         res.json({message: "Item removed"})
     })

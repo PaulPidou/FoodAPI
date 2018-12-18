@@ -66,9 +66,8 @@ router.get('/ingredient/by/name/:name', function(req, res) {
 router.post('/register', function(req, res) {
     User.register(new User({ email : req.body.email, password: req.body.password }), req.body.password, function(err, user) {
         if(!user) {
-            return res.status(403).json({
-                message: 'User already exists'
-            })
+            res.status(403).json({message: 'User already exists'})
+            return
         }
         res.json({'message': 'Registration succeeded'})
     })
@@ -77,17 +76,15 @@ router.post('/register', function(req, res) {
 router.post('/login', function(req, res, next) {
     passport.authenticate('local', {session: false}, (err, user) => {
         if (err || !user) {
-            return res.status(400).json({
-                message: 'Bad  email or password'
-            })
+            res.status(400).json({message: 'Bad  email or password'})
+            return
         }
 
         req.login(user, {session: false}, (err) => {
             user = user.toJSON()
             if (err) {
-                return res.status(400).json({
-                    message: 'Bad request'
-                })
+                res.status(400).json({message: 'Bad request'})
+                return
             }
             const token = jwt.sign({email: user.email}, config.secret)
             res.json({token})

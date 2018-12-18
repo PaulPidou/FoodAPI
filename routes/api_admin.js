@@ -25,9 +25,7 @@ router.post('/add/recipe', function(req, res) {
     })
     recipe.save((err, recipe) => {
         if(err) {
-            res.status(403).json({
-                message: err.message
-            })
+            res.status(403).json({message: err.message})
             return
         }
         res.json(recipe._id)

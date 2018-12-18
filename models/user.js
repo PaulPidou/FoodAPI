@@ -7,6 +7,10 @@ const ShoppingItem = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
+    ingredientName: {
+        type: String,
+        required: true
+    },
     quantity: {
         type: Number
     },
@@ -18,6 +22,10 @@ const ShoppingItem = new mongoose.Schema({
 const FridgeItem = new mongoose.Schema({
     ingredientID: {
         type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    ingredientName: {
+        type: String,
         required: true
     },
     quantity: {

@@ -574,7 +574,7 @@
             "name": "body",
             "description": "Item object that needs to be added to the fridge",
             "required": true,
-            "schema": {"$ref": "#/definitions/Item"}
+            "schema": {"$ref": "#/definitions/FridgeItem"}
           }
         ],
         "security": [
@@ -716,8 +716,20 @@
       "type": "object",
       "properties": {
         "ingredientID": {"type": "string"},
-        "quantity": {"type": "number"},
+        "quantity": {"type": "number", "minimum": 0},
         "unit": {"type": "string"}
+      },
+      "required": [
+        "ingredientID"
+      ]
+    },
+    "FridgeItem": {
+      "type": "object",
+      "properties": {
+        "ingredientID": {"type": "string"},
+        "quantity": {"type": "number", "minimum": 0},
+        "unit": {"type": "string"},
+        "expirationDate": {"type": "string", "format": "date-time"}
       },
       "required": [
         "ingredientID"

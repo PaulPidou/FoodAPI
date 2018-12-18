@@ -62,6 +62,7 @@ router.post('/shoppinglist/item', function(req, res) {
 
         req.user.shoppingList.push({
             ingredientID: req.body.ingredientID,
+            ingredientName: ingredient.name,
             quantity: req.body.quantity,
             unit: req.body.unit
         })
@@ -93,20 +94,21 @@ router.post('/fridge/item', function(req, res) {
             return
         }
 
-        req.user.shoppingList.push({
+        req.user.fridge.push({
             ingredientID: req.body.ingredientID,
+            ingredientName: ingredient.name,
             quantity: req.body.quantity,
             unit: req.body.unit,
             expirationDate: req.body.expirationDate
         })
         const user = await req.user.save()
-        res.json({_id: user.shoppingList[user.shoppingList.length-1]._id})
+        res.json({_id: user.fridge[user.fridge.length-1]._id})
     })
 })
 
 router.delete('/fridge/item/:itemID', function(req, res) {
     User.findByIdAndUpdate(req.user._id,
-        { $pull: { "shoppingList": {"_id": req.params.itemID}}}, {'new': true}
+        { $pull: { "fridge": {"_id": req.params.itemID}}}, {'new': true}
     ).exec(function(err, user) {
         if (err || !user) {
             res.status(404).json({message: "Item not found"})

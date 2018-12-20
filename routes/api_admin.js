@@ -1,13 +1,15 @@
 import express from "express"
 import Recipe from '../models/recipe'
 
+import {checkIfRecipeExist} from '../middlewares/checkExistence'
+
 const router = express.Router()
 
 router.get('/set/user/:user/admin', function(req, res) {
     res.json([])
 })
 
-router.post('/add/recipe', function(req, res) {
+router.post('/recipe', function(req, res) {
     const recipe = new Recipe({
         title: req.body.title,
         author: req.body.author,
@@ -29,6 +31,16 @@ router.post('/add/recipe', function(req, res) {
             return
         }
         res.json(recipe._id)
+    })
+})
+
+router.delete('/recipe/:recipeID', checkIfRecipeExist, function(req, res) {
+    res.locals.recipe.remove((err, recipe) => {
+        if(err) {
+            res.status(403).json({message: err.message})
+            return
+        }
+        res.json({message: "Recipe " + recipe._id + " removed"})
     })
 })
 

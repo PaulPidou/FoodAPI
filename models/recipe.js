@@ -2,6 +2,9 @@ import mongoose from 'mongoose'
 import mongoosastic from 'mongoosastic'
 import Ingredient from './ingredients'
 
+import log from 'log4js'
+const logger = log.getLogger()
+
 const IngredientSchema = new mongoose.Schema({
     display: {
         type: String,
@@ -115,6 +118,21 @@ RecipeSchema.post('save', async function() {
         if (ingredient) {
             await Ingredient.findByIdAndUpdate(ingredient._id, {$push: {'recipes': recipe._id}})
         }
+    }
+})
+
+RecipeSchema.pre('remove', async function(next) {
+    const recipe = this
+
+    for (const recipeIngredient of recipe.ingredients) {
+        Ingredient.findByIdAndUpdate(recipeIngredient.ingredientID,
+            { $pull: { "recipes": recipe._id } }, {'new': true}
+        ).exec(function(err, ingredient) {
+            if (err || !ingredient) {
+                logger.error("Issue while removing recipe " + recipe._id + " from ingredient " + recipeIngredient.ingredientID)
+            }
+            next()
+        })
     }
 })
 

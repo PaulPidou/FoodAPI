@@ -8,7 +8,8 @@ const IngredientSchema = new mongoose.Schema({
         unique: true
     },
     recipes: {
-        type: [mongoose.Schema.Types.ObjectId]
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Recipe'
     }
 })
 

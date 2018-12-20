@@ -696,7 +696,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Operation succeeded"
+            "description": "User set as admin"
           }
         }
       }

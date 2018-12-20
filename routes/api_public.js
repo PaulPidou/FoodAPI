@@ -34,8 +34,16 @@ router.post('/recipes/summary', function(req, res) {
 })
 
 router.post('/recipes/by/keywords', function(req, res) {
-    // Need elastic search
-    res.json([])
+    Recipe.search({
+        query_string: {
+            query: req.body.keywords
+        }}, function(err, results) {
+        if(err || !results || results.hits.total === 0) {
+            res.json([])
+            return
+        }
+        res.json(results.hits.hits)
+    })
 })
 
 router.post('/recipes/by/ingredients', async function(req, res) {

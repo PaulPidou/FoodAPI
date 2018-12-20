@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import mongoosastic from 'mongoosastic'
 import Ingredient from './ingredients'
 
 const IngredientSchema = new mongoose.Schema({
@@ -62,6 +63,7 @@ const timingDetails = new mongoose.Schema({
 const RecipeSchema = new mongoose.Schema({
     title: {
         type: String,
+        es_indexed:true,
         required: true
     },
     author: { type: String },
@@ -122,6 +124,7 @@ RecipeSchema.methods.toJSON = function() {
     return obj
 }
 
+RecipeSchema.plugin(mongoosastic)
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
 export default Recipe

@@ -1,4 +1,5 @@
 import express from "express"
+import User from '../models/user'
 import Recipe from '../models/recipe'
 
 import {checkIfRecipeExist} from '../middlewares/checkExistence'
@@ -6,7 +7,13 @@ import {checkIfRecipeExist} from '../middlewares/checkExistence'
 const router = express.Router()
 
 router.get('/set/user/:user/admin', function(req, res) {
-    res.json([])
+    User.findByIdAndUpdate(req.params.user, {isAdmin: true}, {'new': true}).exec(function (err, user) {
+        if(err || !user) {
+            res.status(403).json({message: err.message})
+            return
+        }
+        res.json({message: "User set as admin"})
+    })
 })
 
 router.post('/recipe', function(req, res) {

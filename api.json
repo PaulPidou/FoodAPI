@@ -701,7 +701,7 @@
         }
       }
     },
-    "/admin/add/recipe": {
+    "/admin/recipe": {
       "post": {
         "tags": ["Admin"],
         "summary": "Add a recipe to the database",
@@ -729,6 +729,39 @@
         "responses": {
           "200": {
             "description": "Recipe added"
+          }
+        }
+      }
+    },
+    "/admin/recipe/{recipeID}": {
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Remove the recipe from the database",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipeID",
+            "description": "Identifier of the recipe",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe removed"
+          },
+          "404": {
+            "description": "Recipe not found"
           }
         }
       }

@@ -672,6 +672,90 @@
         }
       }
     },
+    "/user/move/item/{itemID}/from/shoppinglist/to/fridge": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Transfer an item from the shopping list to the fridge of the user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "itemID",
+            "description": "Identifier of the item object that needs to be transferred",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {"type": "string", "description": "Identifier of the item"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
+    "/user/move/item/{itemID}/from/fridge/to/shoppinglist": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Transfer an item from the fridge to the shopping list of the user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "itemID",
+            "description": "Identifier of the item object that needs to be transferred",
+            "required": true,
+            "schema": {"type": "string"}
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {"type": "string", "description": "Identifier of the item"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
     "/admin/set/user/{userID}/admin": {
       "get": {
         "tags": ["Admin"],

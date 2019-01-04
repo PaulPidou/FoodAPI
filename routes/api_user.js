@@ -1,8 +1,10 @@
 import express from 'express'
 
 import User from '../models/user'
-
 import {checkIfIngredientExist, checkIfRecipeExist} from '../middlewares/checkExistence'
+import {addItemToShoppingList, addItemToFridge,
+    removeItemFromShoppingList, removeItemFromFridge,
+    getItemFromShoppingList, getItemFromFridge} from '../utils/user'
 
 const router = express.Router()
 
@@ -47,26 +49,19 @@ router.get('/shoppinglist', function(req, res) {
 })
 
 router.post('/shoppinglist/item', checkIfIngredientExist, async function(req, res) {
-    req.user.shoppingList.push({
+    const item = {
         ingredientID: req.body.ingredientID,
         ingredientName: res.locals.ingredient.name,
         quantity: req.body.quantity,
         unit: req.body.unit
-    })
-    const user = await req.user.save()
-    res.json({_id: user.shoppingList[user.shoppingList.length-1]._id})
+    }
+    const id = await addItemToShoppingList(req.user, item)
+    res.json({_id: id})
 })
 
-router.delete('/shoppinglist/item/:itemID', function(req, res) {
-    User.findByIdAndUpdate(req.user._id,
-        { $pull: { "shoppingList": {"_id": req.params.itemID}}}, {'new': true}
-    ).exec(function(err, user) {
-        if (err || !user) {
-            res.status(404).json({message: "Item not found"})
-            return
-        }
-        res.json({message: "Item removed"})
-    })
+router.delete('/shoppinglist/item/:itemID', async function(req, res) {
+    const bool = await removeItemFromShoppingList(req.user._id, req.params.itemID)
+    bool ? res.json({message: "Item removed"}) : res.status(404).json({message: "Item not found"})
 })
 
 router.get('/fridge', function(req, res) {
@@ -74,27 +69,42 @@ router.get('/fridge', function(req, res) {
 })
 
 router.post('/fridge/item', checkIfIngredientExist, async function(req, res) {
-    req.user.fridge.push({
+    const item = {
         ingredientID: req.body.ingredientID,
         ingredientName: res.locals.ingredient.name,
         quantity: req.body.quantity,
         unit: req.body.unit,
         expirationDate: req.body.expirationDate
-    })
-    const user = await req.user.save()
-    res.json({_id: user.fridge[user.fridge.length-1]._id})
+    }
+    const id = await addItemToFridge(req.user, item)
+    res.json({_id: id})
 })
 
-router.delete('/fridge/item/:itemID', function(req, res) {
-    User.findByIdAndUpdate(req.user._id,
-        { $pull: { "fridge": {"_id": req.params.itemID}}}, {'new': true}
-    ).exec(function(err, user) {
-        if (err || !user) {
-            res.status(404).json({message: "Item not found"})
-            return
-        }
-        res.json({message: "Item removed"})
-    })
+router.delete('/fridge/item/:itemID', async function(req, res) {
+    const bool = await removeItemFromFridge(req.user._id, req.params.itemID)
+    bool ? res.json({message: "Item removed"}) : res.status(404).json({message: "Item not found"})
+})
+
+router.get('/move/item/:itemID/from/shoppinglist/to/fridge', async function(req, res) {
+    const item = getItemFromShoppingList(req.user, req.params.itemID)
+    if(!item) {
+        res.status(404).json({message: "Item not found"})
+        return
+    }
+    await removeItemFromShoppingList(req.user._id, req.params.itemID)
+    const id = await addItemToFridge(req.user, item)
+    res.json({_id: id})
+})
+
+router.get('/move/item/:itemID/from/fridge/to/shoppinglist', async function(req, res) {
+    const item = getItemFromFridge(req.user, req.params.itemID)
+    if(!item) {
+        res.status(404).json({message: "Item not found"})
+        return
+    }
+    await removeItemFromFridge(req.user._id, req.params.itemID)
+    const id = await addItemToShoppingList(req.user, item)
+    res.json({_id: id})
 })
 
 export default router

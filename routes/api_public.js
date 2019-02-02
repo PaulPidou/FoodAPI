@@ -51,6 +51,16 @@ router.post('/recipes/by/ingredients', async function(req, res) {
     res.json(recipes)
 })
 
+router.get('/ingredients', function(req, res) {
+    Ingredient.find({}).select({'name': 1}).exec(function(err, ingredients) {
+        if(err || !ingredients) {
+            res.status(404).json({message: "Ingredients not found"})
+            return
+        }
+        res.json(ingredients)
+    })
+})
+
 router.get('/ingredient/:ingredientID', function(req, res) {
     Ingredient.findById(req.params.ingredientID).exec(function(err, ingredient) {
         if(err || !ingredient) {

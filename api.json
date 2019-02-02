@@ -164,6 +164,25 @@
         }
       }
     },
+    "/public/ingredients": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get all ingredients",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/Ingredients"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/ingredient/{ingredientID}": {
       "get": {
         "tags": ["Public"],
@@ -874,6 +893,13 @@
         "ingredientID"
       ]
     },
+    "Ingredients": {
+      "type": "object",
+      "properties": {
+        "_id": {"type": "string"},
+        "name": {"type": "string"}
+      }
+    },
     "FridgeItem": {
       "type": "object",
       "properties": {
@@ -951,13 +977,12 @@
     "RecipeForList": {
       "type": "object",
       "properties": {
-        "recipeID": {"type": "string"},
-        "title": {"type": "number"},
-        "picture": {"type": "string"}
-      },
-      "required": [
-        "ingredientID"
-      ]
+        "_id": {"type": "string"},
+        "title": {"type": "string"},
+        "budget": {"type": "string"},
+        "difficulty": {"type": "string"},
+        "totalTime": {"type": "number"}
+      }
     }
   },
   "components": {

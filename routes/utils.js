@@ -49,13 +49,13 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
     let recipes = {}
     for (const recipeID in scores) {
         scores[recipeID].listCoverage = scores[recipeID].count / ingredientIDs.length
-        const recipe = await Recipe.findById(recipeID).exec()
+        const recipe = await Recipe.findById(recipeID).select(
+            {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
         if (recipe) {
             scores[recipeID].recipeCoverage = scores[recipeID].count / recipe.ingredients.length
         }
         // Better to have a recipe we can do right away than a recipe with missing ingredients
         recipes[recipeID] = 0.2 * scores[recipeID].listCoverage + 0.8 * scores[recipeID].recipeCoverage
     }
-
     return sortObject(recipes)
 }

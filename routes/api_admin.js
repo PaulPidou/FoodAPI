@@ -2,7 +2,7 @@ import express from "express"
 import User from '../models/user'
 import Recipe from '../models/recipe'
 
-import {checkIfRecipeExist} from '../middlewares/checkExistence'
+import {checkIfRecipesExist} from '../middlewares/checkExistence'
 
 const router = express.Router()
 
@@ -41,8 +41,8 @@ router.post('/recipe', function(req, res) {
     })
 })
 
-router.delete('/recipe/:recipeID', checkIfRecipeExist, function(req, res) {
-    res.locals.recipe.remove((err, recipe) => {
+router.delete('/recipes', checkIfRecipesExist, function(req, res) {
+    res.locals.recipes.remove((err, recipe) => {
         if(err) {
             res.status(403).json({message: err.message})
             return

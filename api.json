@@ -420,18 +420,27 @@
         }
       }
     },
-    "/user/save/recipe/{recipeID}": {
-      "get": {
+    "/user/save/recipes": {
+      "post": {
         "tags": ["Authenticated user"],
-        "summary": "Add the recipe to the saved recipes of the connected user",
+        "summary": "Add recipes to the saved recipes of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
         "parameters": [
           {
-            "in": "path",
-            "name": "recipeID",
-            "description": "Identifier of the recipe",
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipes ID",
             "required": true,
-            "schema": {"type": "string"}
-
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
           }
         ],
         "security": [
@@ -445,10 +454,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Recipe saved"
+            "description": "Recipes saved"
           },
           "404": {
-            "description": "Recipe not found"
+            "description": "Recipes not found"
           }
         }
       }

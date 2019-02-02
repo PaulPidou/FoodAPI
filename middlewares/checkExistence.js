@@ -13,14 +13,14 @@ exports.checkIfIngredientExist = function(req, res, next) {
     })
 }
 
-exports.checkIfRecipeExist = function(req, res, next) {
-    const id = req.params.recipeID ? req.params.recipeID : req.body.recipeID
-    Recipe.findById(id).exec(async function(err, recipe) {
-        if(err || !recipe) {
-            return res.status(404).json({message: "Recipe not found"})
-        } else {
-            res.locals.recipe = recipe
-            return next()
+exports.checkIfRecipesExist = function(req, res, next) {
+    const ids = req.params.recipes ? req.params.recipes : req.body.recipes
+    Recipe.find({_id: { $in: ids }}).exec(function(err, recipes) {
+        if(err || !recipes) {
+            res.status(404).json({message: "Recipes not found"})
+            return
         }
+        res.locals.recipes = recipes
+        return next()
     })
 }

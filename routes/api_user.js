@@ -1,10 +1,10 @@
 import express from 'express'
 
 import User from '../models/user'
-import {checkIfIngredientExist, checkIfRecipeExist} from '../middlewares/checkExistence'
-import {addItemToShoppingList, addItemToFridge,
-    removeItemFromShoppingList, removeItemFromFridge,
+import {checkIfIngredientExist, checkIfRecipesExist} from '../middlewares/checkExistence'
+import {addItemToShoppingList, addItemToFridge, removeItemFromShoppingList, removeItemFromFridge,
     getItemFromShoppingList, getItemFromFridge} from '../utils/user'
+import Recipe from "../models/recipe";
 
 const router = express.Router()
 
@@ -13,23 +13,34 @@ router.get('/profile/me', function(req, res) {
 })
 
 router.get('/savedrecipes', function(req, res) {
-    res.json(req.user.savedRecipes)
-})
-
-router.get('/save/recipe/:recipeID', checkIfRecipeExist, async function(req, res) {
-    for (const recipe of req.user.savedRecipes) {
-        if (recipe.recipeID.toString() === req.params.recipeID) {
-            res.status(403).json({message: "Recipe already saved"})
+    const recipeIDs = req.user.savedRecipes.map(item => item.recipeID)
+    Recipe.find({_id: { $in: recipeIDs}}).select(
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        if(err || !recipes) {
+            res.status(404).json({message: "Recipes not found"})
             return
         }
+        res.json(recipes)
+    })
+})
+
+router.get('/save/recipes', checkIfRecipesExist, async function(req, res) {
+    const savedRecipeIDs = req.user.savedRecipes.map(item => item.recipeID)
+    const recipesToSave = res.locals.recipes.map(item => item._id).filter(item => !savedRecipeIDs.includes(item))
+
+    if (!recipesToSave.length) {
+        res.status(403).json({message: "Recipes already saved"})
+        return
     }
 
-    req.user.savedRecipes.push({
-        recipeID: req.params.recipeID,
-        savingDate: Date.now()
-    })
+    for(const recipeID of recipesToSave) {
+        req.user.savedRecipes.push({
+            recipeID: recipeID,
+            savingDate: Date.now()
+        })
+    }
     await req.user.save()
-    res.json({message: "Recipe saved"})
+    res.json({message: "Recipes saved"})
 })
 
 router.delete('/savedrecipes/:recipeID', async function(req, res) {

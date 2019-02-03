@@ -14,10 +14,10 @@ exports.removeItemsFromShoppingList = async function(userID, items) {
         .catch(() => {return false})
 }
 
-exports.addItemToFridge = async function(reqUser, item) {
-    reqUser.fridge.push(item)
-    const user = await reqUser.save()
-    return user.fridge[user.fridge.length-1]._id
+exports.addItemsToFridge = async function(reqUser, items) {
+    reqUser.fridge.push(...items)
+    await reqUser.save()
+    return true
 }
 
 exports.removeItemFromFridge = async function(userID, itemID) {

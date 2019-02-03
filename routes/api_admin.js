@@ -42,12 +42,12 @@ router.post('/recipe', function(req, res) {
 })
 
 router.delete('/recipes', checkIfRecipesExist, function(req, res) {
-    res.locals.recipes.remove((err, recipe) => {
+    Recipe.deleteMany({_id: { $in: res.locals.recipes}}, function(err) {
         if(err) {
             res.status(403).json({message: err.message})
             return
         }
-        res.json({message: "Recipe " + recipe._id + " removed"})
+        res.json({message: "Recipes removed"})
     })
 })
 

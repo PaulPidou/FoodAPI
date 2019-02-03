@@ -456,23 +456,36 @@
           "200": {
             "description": "Recipes saved"
           },
+          "403": {
+            "description": "Recipes already saved"
+          },
           "404": {
             "description": "Recipes not found"
           }
         }
       }
     },
-    "/user/savedrecipes/{recipeID}": {
-      "delete": {
+    "/user/delete/savedrecipes": {
+      "post": {
         "tags": ["Authenticated user"],
-        "summary": "Remove the recipe from the saved recipes of the connected user",
+        "summary": "Remove recipes from the saved recipes of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
         "parameters": [
           {
-            "in": "path",
-            "name": "recipeID",
-            "description": "Identifier of the recipe",
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipe IDs to delete from the user saved recipes list",
             "required": true,
-            "schema": {"type": "string"}
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
 
           }
         ],
@@ -487,10 +500,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Recipe removed"
+            "description": "Recipes removed"
           },
           "404": {
-            "description": "Recipe not found"
+            "description": "Recipes not found"
           }
         }
       }

@@ -1,10 +1,10 @@
 import express from 'express'
 
 import User from '../models/user'
+import Recipe from "../models/recipe"
 import {checkIfIngredientExist, checkIfRecipesExist} from '../middlewares/checkExistence'
 import {addItemToShoppingList, addItemToFridge, removeItemFromShoppingList, removeItemFromFridge,
     getItemFromShoppingList, getItemFromFridge} from '../utils/user'
-import Recipe from "../models/recipe";
 
 const router = express.Router()
 
@@ -24,9 +24,10 @@ router.get('/savedrecipes', function(req, res) {
     })
 })
 
-router.get('/save/recipes', checkIfRecipesExist, async function(req, res) {
-    const savedRecipeIDs = req.user.savedRecipes.map(item => item.recipeID)
-    const recipesToSave = res.locals.recipes.map(item => item._id).filter(item => !savedRecipeIDs.includes(item))
+router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
+    const savedRecipeIDs = req.user.savedRecipes.map(item => item.recipeID.toString())
+    const recipesToSave = res.locals.recipes.map(item => item._id.toString())
+        .filter(item => !savedRecipeIDs.includes(item))
 
     if (!recipesToSave.length) {
         res.status(403).json({message: "Recipes already saved"})
@@ -43,15 +44,15 @@ router.get('/save/recipes', checkIfRecipesExist, async function(req, res) {
     res.json({message: "Recipes saved"})
 })
 
-router.delete('/savedrecipes/:recipeID', async function(req, res) {
+router.post('/delete/savedrecipes', async function(req, res) {
     User.findByIdAndUpdate(req.user._id,
-        { $pull: { "savedRecipes": {"recipeID": req.params.recipeID}}}, {'new': true}
+        { $pull: { "savedRecipes": {"recipeID": {$in: req.body.recipes}}}}, {'multi': true, 'new': true}
         ).exec(function(err, user) {
             if (err || !user) {
-                res.status(404).json({message: "Recipe not found"})
+                res.status(404).json({message: "Recipes not found"})
                 return
             }
-        res.json({message: "Recipe removed"})
+        res.json({message: "Recipes removed"})
     })
 })
 

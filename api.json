@@ -578,18 +578,28 @@
         }
       }
     },
-    "/user/shoppinglist/item/{itemID}": {
-      "delete": {
+    "/user/delete/shoppinglist/items": {
+      "post": {
         "tags": ["Authenticated user"],
-        "summary": "Delete an item from the shopping list of the connected user",
+        "summary": "Delete items from the shopping list of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
         "parameters": [
           {
-            "in": "path",
-            "name": "itemID",
-            "description": "Identifier of the item object that needs to be removed from the shopping list",
+            "in": "body",
+            "name": "body",
+            "description": "Array of items ID that needs to be removed from the shopping list",
             "required": true,
-            "schema": {"type": "string"}
-
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "description": "Array of items ID",
+                  "items": {"type": "string"}
+                }
+              }
+            }
           }
         ],
         "security": [
@@ -603,10 +613,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Item removed"
+            "description": "Items removed"
           },
           "404": {
-            "description": "Item not found"
+            "description": "Items not found"
           }
         }
       }

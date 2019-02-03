@@ -6,9 +6,9 @@ exports.addItemsToShoppingList = async function(reqUser, items) {
     return true
 }
 
-exports.removeItemFromShoppingList = async function(userID, itemID) {
+exports.removeItemsFromShoppingList = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
-        { $pull: { "shoppingList": {"_id": itemID}}}, {'new': true}
+        { $pull: { "shoppingList": { "_id": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
         .then((user) => {return Boolean(user)})
         .catch(() => {return false})

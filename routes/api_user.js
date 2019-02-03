@@ -3,7 +3,7 @@ import express from 'express'
 import User from '../models/user'
 import Recipe from "../models/recipe"
 import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
-import {addItemsToShoppingList, addItemToFridge, removeItemFromShoppingList, removeItemFromFridge,
+import {addItemsToShoppingList, addItemToFridge, removeItemsFromShoppingList, removeItemFromFridge,
     getItemFromShoppingList, getItemFromFridge} from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
@@ -77,9 +77,9 @@ router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, 
     res.json({ message: 'Items saved' })
 })
 
-router.delete('/shoppinglist/item/:itemID', async function(req, res) {
-    const bool = await removeItemFromShoppingList(req.user._id, req.params.itemID)
-    bool ? res.json({message: "Item removed"}) : res.status(404).json({message: "Item not found"})
+router.post('/delete/shoppinglist/items', async function(req, res) {
+    const bool = await removeItemsFromShoppingList(req.user._id, req.body.items)
+    bool ? res.json({ message: "Items removed" }) : res.status(404).json({ message: "Items not found" })
 })
 
 router.get('/fridge', function(req, res) {

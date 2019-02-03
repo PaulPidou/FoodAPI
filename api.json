@@ -538,7 +538,7 @@
     "/user/shoppinglist/items": {
       "post": {
         "tags": ["Authenticated user"],
-        "summary": "Add a new item to the shopping list of the connected user",
+        "summary": "Add new items to the shopping list of the connected user",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "security": [
@@ -571,6 +571,9 @@
         "responses": {
           "200": {
             "description": "Items saved"
+          },
+          "404": {
+            "description": "Ingredients not found"
           },
           "422": {
             "description": "Invalid input"
@@ -648,20 +651,12 @@
         }
       }
     },
-    "/user/fridge/item": {
+    "/user/fridge/items": {
       "post": {
         "tags": ["Authenticated user"],
-        "summary": "Add a new item to the fridge of the connected user",
+        "summary": "Add new items to the fridge of the connected user",
         "consumes": ["application/json"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Item object that needs to be added to the fridge",
-            "required": true,
-            "schema": {"$ref": "#/definitions/FridgeItem"}
-          }
-        ],
+        "produces": ["application/json"],
         "security": [
           {
             "bearerAuth": {
@@ -671,18 +666,30 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {"type": "string", "description": "Identifier of the item"}
-                  }
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of items that needs to be added to the fridge",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredients": {
+                  "type": "array",
+                  "description": "Array of ingredients",
+                  "items": {"$ref": "#/definitions/FridgeItem"}
                 }
               }
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items saved"
+          },
+          "404": {
+            "description": "Ingredients not found"
           },
           "422": {
             "description": "Invalid input"
@@ -690,7 +697,7 @@
         }
       }
     },
-    "/user/fridge/item/{itemID}": {
+    "/user/fridge/items/{itemID}": {
       "delete": {
         "tags": ["Authenticated user"],
         "summary": "Delete an item from the fridge of the connected user",

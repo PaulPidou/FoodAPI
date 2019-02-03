@@ -3,7 +3,7 @@ import express from 'express'
 import User from '../models/user'
 import Recipe from "../models/recipe"
 import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
-import {addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList, removeItemFromFridge,
+import {addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList, removeItemsFromFridge,
     getItemFromShoppingList, getItemFromFridge} from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
@@ -45,7 +45,7 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
     res.json({message: "Recipes saved"})
 })
 
-router.post('/delete/savedrecipes', async function(req, res) {
+router.post('/savedrecipes/delete/recipes', async function(req, res) {
     User.findByIdAndUpdate(req.user._id,
         { $pull: { "savedRecipes": {"recipeID": {$in: req.body.recipes}}}}, {'multi': true, 'new': true}
         ).exec(function(err, user) {
@@ -77,7 +77,7 @@ router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, 
     res.json({ message: 'Items saved' })
 })
 
-router.post('/delete/shoppinglist/items', async function(req, res) {
+router.post('/shoppinglist/delete/items', async function(req, res) {
     const bool = await removeItemsFromShoppingList(req.user._id, req.body.items)
     bool ? res.json({ message: "Items removed" }) : res.status(404).json({ message: "Items not found" })
 })
@@ -103,9 +103,9 @@ router.post('/fridge/items', checkIfIngredientsExist, async function(req, res) {
     res.json({ message: 'Items saved' })
 })
 
-router.delete('/fridge/item/:itemID', async function(req, res) {
-    const bool = await removeItemFromFridge(req.user._id, req.params.itemID)
-    bool ? res.json({message: "Item removed"}) : res.status(404).json({message: "Item not found"})
+router.post('/fridge/delete/items', async function(req, res) {
+    const bool = await removeItemsFromFridge(req.user._id, req.body.items)
+    bool ? res.json({message: "Items removed"}) : res.status(404).json({message: "Items not found"})
 })
 
 router.get('/move/item/:itemID/from/shoppinglist/to/fridge', async function(req, res) {

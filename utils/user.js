@@ -20,9 +20,9 @@ exports.addItemsToFridge = async function(reqUser, items) {
     return true
 }
 
-exports.removeItemFromFridge = async function(userID, itemID) {
+exports.removeItemsFromFridge = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
-        { $pull: { "fridge": {"_id": itemID}}}, {'new': true}
+        { $pull: { "fridge": {"_id": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
         .then((user) => {return Boolean(user)})
         .catch(() => {return false})

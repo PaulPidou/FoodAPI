@@ -34,15 +34,37 @@ router.post('/recipes/summary', function(req, res) {
 })
 
 router.post('/recipes/by/keywords', function(req, res) {
-    Recipe.search({
-        query_string: {
-            query: req.body.keywords
-        }}, function(err, results) {
+    Recipe.search({ query_string: { query: req.body.keywords }}, function(err, results) {
         if(err || !results || results.hits.total === 0) {
             res.json([])
             return
         }
-        res.json(results.hits.hits)
+
+        let recipeIDs = []
+        let scoreCache = {}
+        for(const recipe of results.hits.hits) {
+            recipeIDs.push(recipe._id)
+            scoreCache[recipe._id] = recipe._score
+        }
+
+        Recipe.find({_id: { $in: recipeIDs}}).select(
+            {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+            if(err || !recipes) {
+                res.json([])
+                return
+            }
+            res.json(
+                recipes.map((recipe) => {
+                    return {
+                        _id: recipe._id,
+                        title: recipe.title,
+                        budget: recipe.budget,
+                        difficulty: recipe.difficulty,
+                        totalTime: recipe.totalTime,
+                        score: scoreCache[recipe._id]
+                    }
+                }))
+        })
     })
 })
 

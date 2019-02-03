@@ -740,17 +740,26 @@
         }
       }
     },
-    "/user/move/item/{itemID}/from/shoppinglist/to/fridge": {
-      "get": {
+    "/user/move/items/from/shoppinglist/to/fridge": {
+      "post": {
         "tags": ["Authenticated user"],
-        "summary": "Transfer an item from the shopping list to the fridge of the user",
+        "summary": "Transfer items from the shopping list to the fridge of the user",
         "parameters": [
           {
-            "in": "path",
-            "name": "itemID",
-            "description": "Identifier of the item object that needs to be transferred",
+            "in": "body",
+            "name": "body",
+            "description": "Items IDs that need to be transferred",
             "required": true,
-            "schema": {"type": "string"}
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "description": "Array of items IDs",
+                  "items": {"type": "string"}
+                }
+              }
+            }
 
           }
         ],
@@ -765,34 +774,34 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {"type": "string", "description": "Identifier of the item"}
-                  }
-                }
-              }
-            }
+            "description": "Items moved"
           },
           "404": {
-            "description": "Item not found"
+            "description": "Items not found"
           }
         }
       }
     },
-    "/user/move/item/{itemID}/from/fridge/to/shoppinglist": {
-      "get": {
+    "/user/move/items/from/fridge/to/shoppinglist": {
+      "post": {
         "tags": ["Authenticated user"],
-        "summary": "Transfer an item from the fridge to the shopping list of the user",
+        "summary": "Transfer items from the fridge to the shopping list of the user",
         "parameters": [
           {
-            "in": "path",
-            "name": "itemID",
-            "description": "Identifier of the item object that needs to be transferred",
+            "in": "body",
+            "name": "body",
+            "description": "Items IDs that need to be transferred",
             "required": true,
-            "schema": {"type": "string"}
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "description": "Array of items IDs",
+                  "items": {"type": "string"}
+                }
+              }
+            }
 
           }
         ],
@@ -807,19 +816,10 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {"type": "string", "description": "Identifier of the item"}
-                  }
-                }
-              }
-            }
+            "description": "Items moved"
           },
           "404": {
-            "description": "Item not found"
+            "description": "Items not found"
           }
         }
       }

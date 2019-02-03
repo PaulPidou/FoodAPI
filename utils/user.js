@@ -28,10 +28,10 @@ exports.removeItemsFromFridge = async function(userID, items) {
         .catch(() => {return false})
 }
 
-exports.getItemFromShoppingList = function(reqUser, itemID) {
-    return reqUser.shoppingList.id(itemID)
+exports.getItemsFromShoppingList = function(reqUser, items) {
+    return reqUser.shoppingList.filter(item => items.includes(item._id.toString()))
 }
 
-exports.getItemFromFridge = function(reqUser, itemID) {
-    return reqUser.fridge.id(itemID)
+exports.getItemsFromFridge = function(reqUser, items) {
+    return reqUser.fridge.filter(item => items.includes(item._id.toString()))
 }

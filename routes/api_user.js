@@ -4,7 +4,7 @@ import User from '../models/user'
 import Recipe from "../models/recipe"
 import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
 import {addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList, removeItemsFromFridge,
-    getItemFromShoppingList, getItemFromFridge} from '../utils/user'
+    getItemsFromShoppingList, getItemsFromFridge} from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
 const router = express.Router()
@@ -108,26 +108,26 @@ router.post('/fridge/delete/items', async function(req, res) {
     bool ? res.json({message: "Items removed"}) : res.status(404).json({message: "Items not found"})
 })
 
-router.get('/move/item/:itemID/from/shoppinglist/to/fridge', async function(req, res) {
-    const item = getItemFromShoppingList(req.user, req.params.itemID)
-    if(!item) {
-        res.status(404).json({message: "Item not found"})
+router.post('/move/items/from/shoppinglist/to/fridge', async function(req, res) {
+    const items = getItemsFromShoppingList(req.user, req.body.items)
+    if(!items || !items.length) {
+        res.status(404).json({message: "Items not found"})
         return
     }
-    await removeItemFromShoppingList(req.user._id, req.params.itemID)
-    const id = await addItemToFridge(req.user, item)
-    res.json({_id: id})
+    await removeItemsFromShoppingList(req.user._id, req.body.items)
+    await addItemsToFridge(req.user, items)
+    res.json({message: "Items moved"})
 })
 
-router.get('/move/item/:itemID/from/fridge/to/shoppinglist', async function(req, res) {
-    const item = getItemFromFridge(req.user, req.params.itemID)
-    if(!item) {
-        res.status(404).json({message: "Item not found"})
+router.post('/move/items/from/fridge/to/shoppinglist', async function(req, res) {
+    const items = getItemsFromFridge(req.user, req.body.items)
+    if(!items || !items.length) {
+        res.status(404).json({message: "Items not found"})
         return
     }
-    await removeItemFromFridge(req.user._id, req.params.itemID)
-    const id = await addItemToShoppingList(req.user, item)
-    res.json({_id: id})
+    await removeItemsFromFridge(req.user._id, req.body.items)
+    await addItemsToShoppingList(req.user, items)
+    res.json({message: "Items moved"})
 })
 
 export default router

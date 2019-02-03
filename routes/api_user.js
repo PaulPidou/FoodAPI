@@ -77,6 +77,22 @@ router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, 
     res.json({ message: 'Items saved' })
 })
 
+router.post('/shoppinglist/items/from/recipes', checkIfRecipesExist, async function(req, res) {
+    let itemsToAdd = []
+    for(const recipe of res.locals.recipes) {
+        const items = recipe.ingredients.map((ingredient) => {
+            return {
+                ingredientID: ingredient.ingredientID,
+                ingredientName: ingredient.ingredient,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit
+        }})
+        itemsToAdd.push(...items)
+    }
+    await addItemsToShoppingList(req.user, itemsToAdd)
+    res.json({ message: 'Items saved' })
+})
+
 router.post('/shoppinglist/delete/items', async function(req, res) {
     const bool = await removeItemsFromShoppingList(req.user._id, req.body.items)
     bool ? res.json({ message: "Items removed" }) : res.status(404).json({ message: "Items not found" })

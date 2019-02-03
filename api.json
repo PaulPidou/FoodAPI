@@ -581,6 +581,52 @@
         }
       }
     },
+    "/user/shoppinglist/items/from/recipes": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Add new items to the shopping list of the connected user from recipes",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipes IDs whose ingredients need to be added to the shopping list",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "description": "Array of recipes",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items saved"
+          },
+          "404": {
+            "description": "Recipes not found"
+          },
+          "422": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
     "/user/shoppinglist/delete/items": {
       "post": {
         "tags": ["Authenticated user"],

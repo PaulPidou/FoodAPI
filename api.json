@@ -535,7 +535,7 @@
         }
       }
     },
-    "/user/shoppinglist/item": {
+    "/user/shoppinglist/items": {
       "post": {
         "tags": ["Authenticated user"],
         "summary": "Add a new item to the shopping list of the connected user",
@@ -556,7 +556,13 @@
             "name": "body",
             "description": "Item object that needs to be added to the shopping list",
             "required": true,
-            "schema": {"$ref": "#/definitions/Item"}
+            "schema": {
+              "type": "object",
+              "properties": {
+
+              }
+
+            }
           }
         ],
         "responses": {

@@ -1,20 +1,34 @@
 import Ingredient from "../models/ingredients"
 import Recipe from "../models/recipe"
 
-exports.checkIfIngredientExist = function(req, res, next) {
-    const id = req.params.ingredientID ? req.params.ingredientID : req.body.ingredientID
-    Ingredient.findById(id).exec(async function(err, ingredient) {
-        if(err || !ingredient) {
-            return res.status(404).json({message: "Ingredient not found"})
-        } else {
-            res.locals.ingredient = ingredient
-            return next()
+exports.checkIfIngredientsExist = function(req, res, next) {
+    let ids = req.params.ingredients ? req.params.ingredients.split(',') : req.body.ingredients
+
+    if(!ids.length) {
+        res.status(400).json({message: "Please provide ingredients"})
+        return
+    }
+
+    if (typeof ids[0] === 'object') { ids = ids.map(item => item.ingredientID) }
+
+    Ingredient.find({_id: { $in: ids }}).exec(function(err, ingredients) {
+        if(err || !ingredients) {
+            res.status(404).json({message: "Ingredients not found"})
+            return
         }
+        res.locals.ingredients = ingredients
+        return next()
     })
 }
 
 exports.checkIfRecipesExist = function(req, res, next) {
-    const ids = req.params.recipes ? req.params.recipes : req.body.recipes
+    const ids = req.params.recipes ? req.params.recipes.split(',') : req.body.recipes
+
+    if(!ids.length) {
+        res.status(400).json({message: "Please provide recipes"})
+        return
+    }
+
     Recipe.find({_id: { $in: ids }}).exec(function(err, recipes) {
         if(err || !recipes) {
             res.status(404).json({message: "Recipes not found"})

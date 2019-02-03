@@ -2,9 +2,10 @@ import express from 'express'
 
 import User from '../models/user'
 import Recipe from "../models/recipe"
-import {checkIfIngredientExist, checkIfRecipesExist} from '../middlewares/checkExistence'
-import {addItemToShoppingList, addItemToFridge, removeItemFromShoppingList, removeItemFromFridge,
+import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
+import {addItemsToShoppingList, addItemToFridge, removeItemFromShoppingList, removeItemFromFridge,
     getItemFromShoppingList, getItemFromFridge} from '../utils/user'
+import { getCorrespondingItem } from './utils'
 
 const router = express.Router()
 
@@ -60,15 +61,20 @@ router.get('/shoppinglist', function(req, res) {
     res.json(req.user.shoppingList)
 })
 
-router.post('/shoppinglist/item', checkIfIngredientExist, async function(req, res) {
-    const item = {
-        ingredientID: req.body.ingredientID,
-        ingredientName: res.locals.ingredient.name,
-        quantity: req.body.quantity,
-        unit: req.body.unit
+router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, res) {
+    let items = []
+    for(const ingredient of res.locals.ingredients) {
+        const item = getCorrespondingItem(req.body.ingredients, ingredient._id.toString())
+        const itemToSave = {
+            ingredientID: item.ingredientID,
+            ingredientName: ingredient.name,
+            quantity: item.quantity,
+            unit: item.unit
+        }
+        items.push(itemToSave)
     }
-    const id = await addItemToShoppingList(req.user, item)
-    res.json({_id: id})
+    await addItemsToShoppingList(req.user, items)
+    res.json({ message: 'Items saved' })
 })
 
 router.delete('/shoppinglist/item/:itemID', async function(req, res) {
@@ -80,7 +86,7 @@ router.get('/fridge', function(req, res) {
     res.json(req.user.fridge)
 })
 
-router.post('/fridge/item', checkIfIngredientExist, async function(req, res) {
+router.post('/fridge/item', checkIfIngredientsExist, async function(req, res) {
     const item = {
         ingredientID: req.body.ingredientID,
         ingredientName: res.locals.ingredient.name,

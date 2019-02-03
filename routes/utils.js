@@ -49,6 +49,8 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
     let recipes = {}
     let recipesCache = {}
     for (const recipeID in scores) {
+        if(!scores.hasOwnProperty(recipeID)) { continue }
+
         scores[recipeID].listCoverage = scores[recipeID].count / ingredientIDs.length
         const recipe = await Recipe.findById(recipeID).select(
             {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
@@ -71,4 +73,13 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
         })
     }
     return results
+}
+
+export const getCorrespondingItem = function(itemList, itemID) {
+    for(const item of itemList) {
+        if(item.ingredientID === itemID) {
+            return item
+        }
+    }
+    return {}
 }

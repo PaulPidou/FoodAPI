@@ -1,9 +1,9 @@
 import User from "../models/user"
 
-exports.addItemToShoppingList = async function(reqUser, item) {
-    reqUser.shoppingList.push(item)
-    const user = await reqUser.save()
-    return user.shoppingList[user.shoppingList.length-1]._id
+exports.addItemsToShoppingList = async function(reqUser, items) {
+    reqUser.shoppingList.push(...items)
+    await reqUser.save()
+    return true
 }
 
 exports.removeItemFromShoppingList = async function(userID, itemID) {

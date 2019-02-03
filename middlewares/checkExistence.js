@@ -5,7 +5,7 @@ exports.checkIfIngredientsExist = function(req, res, next) {
     let ids = req.params.ingredients ? req.params.ingredients.split(',') : req.body.ingredients
 
     if(!ids.length) {
-        res.status(400).json({message: "Please provide ingredients"})
+        res.status(422).json({message: "Invalid input"})
         return
     }
 
@@ -25,7 +25,7 @@ exports.checkIfRecipesExist = function(req, res, next) {
     const ids = req.params.recipes ? req.params.recipes.split(',') : req.body.recipes
 
     if(!ids.length) {
-        res.status(400).json({message: "Please provide recipes"})
+        res.status(422).json({message: "Invalid input"})
         return
     }
 

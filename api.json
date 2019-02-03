@@ -554,29 +554,23 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Item object that needs to be added to the shopping list",
+            "description": "Array of items that needs to be added to the shopping list",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
-
+                "ingredients": {
+                  "type": "array",
+                  "description": "Array of ingredients",
+                  "items": {"$ref": "#/definitions/Item"}
+                }
               }
-
             }
           }
         ],
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {"type": "string", "description": "Identifier of the item"}
-                  }
-                }
-              }
-            }
+            "description": "Items saved"
           },
           "422": {
             "description": "Invalid input"

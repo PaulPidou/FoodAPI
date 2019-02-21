@@ -65,6 +65,7 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
     let results = []
     for(const recipe of sortObject(recipes)) {
         results.push({
+            _id: recipesCache[recipe[0]]._id,
             title: recipesCache[recipe[0]].title,
             budget: recipesCache[recipe[0]].budget,
             difficulty: recipesCache[recipe[0]].difficulty,

@@ -30,8 +30,9 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
     const recipesToSave = res.locals.recipes.map(item => item._id.toString())
         .filter(item => !savedRecipeIDs.includes(item))
 
+    const msgBegin = res.locals.recipes.length === 1 ? 'Recipe' : 'Recipes'
     if (!recipesToSave.length) {
-        res.status(403).json({message: "Recipes already saved"})
+        res.status(403).json({ message: `${msgBegin} already saved` })
         return
     }
 
@@ -42,18 +43,19 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
         })
     }
     await req.user.save()
-    res.json({message: "Recipes saved"})
+    res.json({ message: `${msgBegin} saved` })
 })
 
 router.post('/savedrecipes/delete/recipes', async function(req, res) {
+    const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
     User.findByIdAndUpdate(req.user._id,
         { $pull: { "savedRecipes": {"recipeID": {$in: req.body.recipes}}}}, {'multi': true, 'new': true}
         ).exec(function(err, user) {
             if (err || !user) {
-                res.status(404).json({message: "Recipes not found"})
+                res.status(404).json({ message: `${msgBegin}  not found` })
                 return
             }
-        res.json({message: "Recipes removed"})
+        res.json({ message: `${msgBegin}  removed` })
     })
 })
 

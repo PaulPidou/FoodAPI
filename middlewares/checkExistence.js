@@ -25,13 +25,13 @@ exports.checkIfRecipesExist = function(req, res, next) {
     const ids = req.params.recipes ? req.params.recipes.split(',') : req.body.recipes
 
     if(!ids.length) {
-        res.status(422).json({message: "Invalid input"})
+        res.status(422).json({ message: "Invalid input" })
         return
     }
 
     Recipe.find({_id: { $in: ids }}).exec(function(err, recipes) {
         if(err || !recipes) {
-            res.status(404).json({message: "Recipes not found"})
+            res.status(404).json({ message: "Recipes not found" })
             return
         }
         res.locals.recipes = recipes

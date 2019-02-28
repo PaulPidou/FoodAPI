@@ -392,6 +392,33 @@
         }
       }
     },
+    "/user/lists": {
+      "get": {
+        "tags": ["Authenticated user"],
+        "summary": "Get the lists (saved recipes, shopping list & fridge) of the connected user",
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/UserLists"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user/savedrecipes": {
       "get": {
         "tags": ["Authenticated user"],
@@ -976,6 +1003,23 @@
         "email",
         "password"
       ]
+    },
+    "UserLists": {
+      "type": "object",
+      "properties": {
+        "savedRecipes": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/RecipeForList"}
+        },
+        "shoppingList": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Item"}
+        },
+        "fridge": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/FridgeItem"}
+        }
+      }
     },
     "Item": {
       "type": "object",

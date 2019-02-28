@@ -13,6 +13,24 @@ router.get('/profile/me', function(req, res) {
     res.json(req.user)
 })
 
+router.get('/lists', function(req, res) {
+    const user = JSON.parse(JSON.stringify(req.user))
+
+    delete user._id
+    delete user.email
+    delete user.isAdmin
+
+    const recipeIDs = user.savedRecipes.map(item => item.recipeID)
+    Recipe.find({_id: { $in: recipeIDs}}).select(
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        if(err || !recipes) {
+            user.savedRecipes = []
+        }
+        user.savedRecipes = recipes
+        res.json(user)
+    })
+})
+
 router.get('/savedrecipes', function(req, res) {
     const recipeIDs = req.user.savedRecipes.map(item => item.recipeID)
     Recipe.find({_id: { $in: recipeIDs}}).select(

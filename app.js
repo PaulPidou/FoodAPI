@@ -27,6 +27,10 @@ app.use(express.urlencoded({ extended: false }))
 app.use(passport.initialize())
 
 // routes
+const router = express.Router()
+router.head('', function(req, res) { res.json() })
+app.use('/', router)
+
 app.use('/swagger', swagger)
 app.use('/api/public', api_public)
 app.use('/api/user', passport.authenticate('jwt', {session: false}), api_user)

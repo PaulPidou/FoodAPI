@@ -84,3 +84,29 @@ export const getCorrespondingItem = function(itemList, itemID) {
     }
     return {}
 }
+
+export const addNewItems = function(userItems, newItems) {
+    let combinedItems = []
+
+    const userItemsID = userItems.map(item => item.ingredientID)
+    const newItemsID = newItems.map(item => item.ingredientID)
+    const overlapIDs = userItemsID.filter(value => newItemsID.includes(value))
+
+    for(const userItem of userItems) {
+        if(overlapIDs.includes(userItem.ingredientID)) {
+            const newItem = getCorrespondingItem(newItems, userItem.ingredientID)
+            // TO DO: Combine i.e. add items quantity (newItem + userItem)
+            combinedItems.push(userItem)
+        } else {
+            combinedItems.push(userItem)
+        }
+    }
+
+    for(const newItem of newItems) {
+        if(!overlapIDs.includes(newItem.ingredientID)) {
+            combinedItems.push(newItem)
+        }
+    }
+
+    return combinedItems
+}

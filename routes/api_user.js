@@ -4,7 +4,7 @@ import User from '../models/user'
 import Recipe from "../models/recipe"
 import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
 import {addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList, removeItemsFromFridge,
-    getItemsFromShoppingList, getItemsFromFridge} from '../utils/user'
+    getItemsFromShoppingList, getItemsFromFridge, saveRecipesWithIngredients} from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
 const router = express.Router()
@@ -54,14 +54,20 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
         return
     }
 
-    for(const recipeID of recipesToSave) {
-        req.user.savedRecipes.push({
-            recipeID: recipeID,
-            savingDate: Date.now()
-        })
+    const keepFoodListIndependent = false // TO DO: Add this to the user's parameters
+
+    if(keepFoodListIndependent) {
+        for (const recipeID of recipesToSave) {
+            req.user.savedRecipes.push({
+                recipeID: recipeID,
+                savingDate: Date.now()
+            })
+        }
+        await req.user.save()
+    } else {
+        await saveRecipesWithIngredients(req.user, recipesToSave)
     }
-    await req.user.save()
-    res.json({ message: `${msgBegin} saved` })
+    res.json({message: `${msgBegin} saved`})
 })
 
 router.post('/savedrecipes/delete/recipes', async function(req, res) {

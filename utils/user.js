@@ -2,13 +2,32 @@ import User from "../models/user"
 import Recipe from "../models/recipe"
 import { addNewItems } from '../routes/utils'
 
-exports.addItemsToShoppingList = async function(reqUser, items) {
+export const saveRecipes = async function(reqUser, recipes) {
+    for (const recipeID of recipes) {
+        reqUser.savedRecipes.push({
+            recipeID: recipeID,
+            savingDate: Date.now()
+        })
+    }
+    await reqUser.save()
+    return true
+}
+
+export const removeRecipes = async function(userID, recipes) {
+    return User.findByIdAndUpdate(userID,
+        { $pull: { "savedRecipes": {"recipeID": {$in: recipes}}}}, {'multi': true, 'new': true}
+    ).exec()
+        .then(() => { return true })
+        .catch(() => { return false })
+}
+
+export const addItemsToShoppingList = async function(reqUser, items) {
     reqUser.shoppingList.push(...items)
     await reqUser.save()
     return true
 }
 
-exports.removeItemsFromShoppingList = async function(userID, items) {
+export const removeItemsFromShoppingList = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
         { $pull: { "shoppingList": { "_id": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
@@ -16,13 +35,13 @@ exports.removeItemsFromShoppingList = async function(userID, items) {
         .catch(() => {return false})
 }
 
-exports.addItemsToFridge = async function(reqUser, items) {
+export const addItemsToFridge = async function(reqUser, items) {
     reqUser.fridge.push(...items)
     await reqUser.save()
     return true
 }
 
-exports.removeItemsFromFridge = async function(userID, items) {
+export const removeItemsFromFridge = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
         { $pull: { "fridge": {"_id": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
@@ -38,18 +57,28 @@ exports.getItemsFromFridge = function(reqUser, items) {
     return reqUser.fridge.filter(item => items.includes(item._id.toString()))
 }
 
-exports.saveRecipesWithIngredients = async function(reqUser, recipesToSave) {
+exports.handleListDependencies = async function(reqUser, action, object) {
     const currentNeededIngredients = await getIngredientsFromSavedRecipes(reqUser)
     const currentShoppingListObject = buildShoppingListObject(reqUser, currentNeededIngredients)
     const itemsDiff = getDiffBetweenShoppingLists(reqUser, currentShoppingListObject)
 
-    for(const recipeID of recipesToSave) {
-        reqUser.savedRecipes.push({
-            recipeID: recipeID,
-            savingDate: Date.now()
-        })
+    let bool = false
+    switch(action) {
+        case 'SAVE_RECIPES':
+            bool = await saveRecipes(reqUser, object)
+            break
+        case 'REMOVE_RECIPES':
+            bool = await removeRecipes(reqUser._id, object)
+            break
+        case 'ADD_ITEMS_TO_FRIDGE':
+            bool = await addItemsToFridge(reqUser, object)
+            break
+        case 'REMOVE_ITEMS_FROM_FRIDGE':
+            bool = await removeItemsFromFridge(reqUser._id, object)
+            break
+        default:
+            break
     }
-    await reqUser.save()
 
     const newNeededIngredients = await getIngredientsFromSavedRecipes(reqUser)
     const newShoppingListObject = buildShoppingListObject(reqUser, newNeededIngredients)
@@ -65,7 +94,7 @@ exports.saveRecipesWithIngredients = async function(reqUser, recipesToSave) {
 
     reqUser.shoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
     await reqUser.save()
-    return true
+    return bool
 }
 
 const getIngredientsFromSavedRecipes = async function(reqUser) {

@@ -1,13 +1,15 @@
 import express from 'express'
 
-import User from '../models/user'
 import Recipe from "../models/recipe"
 import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
-import {addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList, removeItemsFromFridge,
-    getItemsFromShoppingList, getItemsFromFridge, saveRecipesWithIngredients} from '../utils/user'
+import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList,
+    removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies
+} from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
 const router = express.Router()
+
+const keepFoodListIndependent = false  // TO DO: Add this to the user's parameters
 
 router.get('/profile/me', function(req, res) {
     res.json(req.user)
@@ -54,33 +56,23 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
         return
     }
 
-    const keepFoodListIndependent = false // TO DO: Add this to the user's parameters
-
     if(keepFoodListIndependent) {
-        for (const recipeID of recipesToSave) {
-            req.user.savedRecipes.push({
-                recipeID: recipeID,
-                savingDate: Date.now()
-            })
-        }
-        await req.user.save()
+        await saveRecipes(req.user, recipesToSave)
     } else {
-        await saveRecipesWithIngredients(req.user, recipesToSave)
+        await handleListDependencies(req.user, 'SAVE_RECIPES', recipesToSave)
     }
     res.json({message: `${msgBegin} saved`})
 })
 
 router.post('/savedrecipes/delete/recipes', async function(req, res) {
     const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
-    User.findByIdAndUpdate(req.user._id,
-        { $pull: { "savedRecipes": {"recipeID": {$in: req.body.recipes}}}}, {'multi': true, 'new': true}
-        ).exec(function(err, user) {
-            if (err || !user) {
-                res.status(404).json({ message: `${msgBegin}  not found` })
-                return
-            }
-        res.json({ message: `${msgBegin}  removed` })
-    })
+    let bool = null
+    if(keepFoodListIndependent) {
+        bool = await removeRecipes(req.user._id, req.body.recipes)
+    } else {
+        bool = await handleListDependencies(req.user, 'REMOVE_RECIPES', req.body.recipes)
+    }
+    bool ? res.json({ message: `${msgBegin}  removed` }) : res.status(404).json({ message: `${msgBegin}  not found` })
 })
 
 router.get('/shoppinglist', function(req, res) {

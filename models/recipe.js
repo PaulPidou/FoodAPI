@@ -10,7 +10,7 @@ const IngredientSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    ingredient: {
+    ingredientName: {
         type: String,
         required: true
     },
@@ -33,7 +33,7 @@ const IngredientSchema = new mongoose.Schema({
 }, { _id : false })
 
 const UtensilSchema = new mongoose.Schema({
-    utensil: {
+    utensilName: {
         type: String,
         required: true
     },
@@ -98,11 +98,11 @@ RecipeSchema.pre('validate', async function(next) {
     let ingredients = []
     for (const recipeIngredient of recipe.ingredients) {
         let recipeIngredient_cpy = JSON.parse(JSON.stringify(recipeIngredient))
-        const ingredient = await Ingredient.findOne({name: recipeIngredient.ingredient}).exec()
+        const ingredient = await Ingredient.findOne({name: recipeIngredient.ingredientName}).exec()
         if(ingredient) {
             recipeIngredient_cpy.ingredientID = ingredient._id
         } else {
-            recipeIngredient_cpy.ingredientID = await new Ingredient({name: recipeIngredient.ingredient}).save()
+            recipeIngredient_cpy.ingredientID = await new Ingredient({name: recipeIngredient.ingredientName}).save()
         }
         ingredients.push(recipeIngredient_cpy)
     }
@@ -114,7 +114,7 @@ RecipeSchema.post('save', async function() {
     const recipe = this
 
     for (const recipeIngredient of recipe.ingredients) {
-        const ingredient = await Ingredient.findOne({name: recipeIngredient.ingredient}).exec()
+        const ingredient = await Ingredient.findOne({name: recipeIngredient.name}).exec()
         if (ingredient) {
             await Ingredient.findByIdAndUpdate(ingredient._id, {$push: {'recipes': recipe._id}})
         }

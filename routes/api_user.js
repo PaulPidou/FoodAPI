@@ -9,8 +9,6 @@ import { getCorrespondingItem } from './utils'
 
 const router = express.Router()
 
-const keepFoodListIndependent = false  // TO DO: Add this to the user's parameters
-
 router.get('/profile/me', function(req, res) {
     res.json(req.user)
 })
@@ -56,7 +54,7 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
         return
     }
 
-    if(keepFoodListIndependent) {
+    if(req.user.parameters.keepFoodListsIndependent) {
         await saveRecipes(req.user, recipesToSave)
     } else {
         await handleListDependencies(req.user, 'SAVE_RECIPES', recipesToSave)
@@ -67,11 +65,18 @@ router.post('/save/recipes', checkIfRecipesExist, async function(req, res) {
 router.post('/savedrecipes/delete/recipes', async function(req, res) {
     const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
     let bool = null
-    if(keepFoodListIndependent) {
+    if(req.user.parameters.keepFoodListsIndependent) {
         bool = await removeRecipes(req.user._id, req.body.recipes)
     } else {
         bool = await handleListDependencies(req.user, 'REMOVE_RECIPES', req.body.recipes)
     }
+    bool ? res.json({ message: `${msgBegin}  removed` }) : res.status(404).json({ message: `${msgBegin}  not found` })
+})
+
+router.post('/savedrecipes/cook/recipes', async function(req, res) {
+    const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
+    const bool = await removeRecipes(req.user._id, req.body.recipes)
+    // TO DO: Remove items from fridge
     bool ? res.json({ message: `${msgBegin}  removed` }) : res.status(404).json({ message: `${msgBegin}  not found` })
 })
 
@@ -101,7 +106,7 @@ router.post('/shoppinglist/items/from/recipes', checkIfRecipesExist, async funct
         const items = recipe.ingredients.map((ingredient) => {
             return {
                 ingredientID: ingredient.ingredientID,
-                ingredientName: ingredient.ingredient,
+                ingredientName: ingredient.ingredientName,
                 quantity: ingredient.quantity,
                 unit: ingredient.unit
         }})

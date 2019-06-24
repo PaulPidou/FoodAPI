@@ -100,7 +100,7 @@ exports.handleListDependencies = async function(reqUser, action, object) {
 const getIngredientsFromSavedRecipes = async function(reqUser) {
     const recipeIDs = reqUser.savedRecipes.map(item => item.recipeID)
     const recipes = await Recipe.find({_id: { $in: recipeIDs}})
-        .select({'ingredients.ingredientID': 1, 'ingredients.ingredient': 1,
+        .select({'ingredients.ingredientID': 1, 'ingredients.ingredientName': 1,
             'ingredients.quantity': 1, 'ingredients.unit': 1}).exec()
         .then((recipes) => {return recipes})
         .catch(() => {return []})
@@ -108,11 +108,11 @@ const getIngredientsFromSavedRecipes = async function(reqUser) {
     let ingredients = {}
     for(const recipe of recipes) {
         for(const ingredient of recipe.ingredients) {
-            if(ingredients.hasOwnProperty(ingredient)) {
+            if(ingredients.hasOwnProperty(ingredient.ingredientID.toString())) {
                 // TO DO: add quantity according to unit
             } else {
-                ingredients[ingredient.ingredientID] = {
-                    ingredientName: ingredient.ingredient,
+                ingredients[ingredient.ingredientID.toString()] = {
+                    ingredientName: ingredient.ingredientName,
                     quantity: ingredient.quantity,
                     unit: ingredient.unit
                 }

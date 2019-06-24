@@ -6,7 +6,7 @@ import User from '../models/user'
 import Recipe from '../models/recipe'
 import Ingredient from '../models/ingredients'
 
-import {getRecipesByIngredients} from './utils'
+import { getRecipesByIngredients } from './utils'
 
 import config from '../config'
 
@@ -24,7 +24,8 @@ router.get('/recipe/:recipeID', function(req, res) {
 
 router.post('/recipes/summary', function(req, res) {
     Recipe.find({_id: { $in: req.body.recipes}}).select(
-        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+            'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
         if(err || !recipes) {
             res.status(404).json({message: "Recipes not found"})
             return
@@ -48,7 +49,8 @@ router.post('/recipes/by/keywords', function(req, res) {
         }
 
         Recipe.find({_id: { $in: recipeIDs}}).select(
-            {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+            {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+                'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
             if(err || !recipes) {
                 res.json([])
                 return

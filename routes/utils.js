@@ -70,6 +70,7 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
             budget: recipesCache[recipe[0]].budget,
             difficulty: recipesCache[recipe[0]].difficulty,
             totalTime: recipesCache[recipe[0]].totalTime,
+            ingredients: recipesCache[recipe[0]].ingredients,
             score: recipe[1]
         })
     }
@@ -83,6 +84,37 @@ export const getCorrespondingItem = function(itemList, itemID) {
         }
     }
     return {}
+}
+
+export const convertFlatItemToCombinedOne = function(item) {
+    const newItem = {...item}
+    newItem.quantities = {}
+    newItem.quantities[item.unit] = item.quantity
+    delete newItem.unit
+    delete newItem.quantity
+    return newItem
+}
+
+export const combineQuantities = function(item1, item2) {
+    let combinedItem = {...item1}
+    combinedItem.quantities = {}
+    if(item1.ingredientID.toString() === item2.ingredientID.toString()) {
+        for(const unit in item1.quantities) {
+            if(item2.hasOwnProperty(unit)) {
+                combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
+            } else {
+                combinedItem.quantities[unit] = item1.quantities[unit]
+            }
+        }
+        for(const unit in item2.quantities) {
+            if(!item1.hasOwnProperty(unit)) {
+                combinedItem.quantities[unit] = item2.quantities[unit]
+            }
+        }
+        return combinedItem
+    } else {
+        return null
+    }
 }
 
 export const addNewItems = function(userItems, newItems) {

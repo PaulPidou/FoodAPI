@@ -7,7 +7,7 @@ import {checkIfRecipesExist} from '../middlewares/checkExistence'
 const router = express.Router()
 
 router.get('/set/user/:user/admin', function(req, res) {
-    User.findByIdAndUpdate(req.params.user, {isAdmin: true}, {'new': true}).exec(function (err, user) {
+    User.findByIdAndUpdate(req.params.user, { isAdmin: true }, {'new': true}).exec(function (err, user) {
         if(err || !user) {
             res.status(403).json({message: err.message})
             return

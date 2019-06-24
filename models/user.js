@@ -2,7 +2,14 @@ import mongoose from 'mongoose'
 import passportLocalMongoose from 'passport-local-mongoose'
 import bcrypt from 'bcryptjs'
 
+const ItemQuantity = new mongoose.Schema({
+    _id: false,
+    quantity: { type: Number },
+    unit: {type: String }
+})
+
 const ShoppingItem = new mongoose.Schema({
+    _id: false,
     ingredientID: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
@@ -11,15 +18,11 @@ const ShoppingItem = new mongoose.Schema({
         type: String,
         required: true
     },
-    quantity: {
-        type: Number
-    },
-    unit: {
-        type: String
-    }
+    quantities: [ItemQuantity]
 })
 
 const FridgeItem = new mongoose.Schema({
+    _id: false,
     ingredientID: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
@@ -28,14 +31,20 @@ const FridgeItem = new mongoose.Schema({
         type: String,
         required: true
     },
-    quantity: {
-        type: Number
-    },
-    unit: {
-        type: String
-    },
+    quantities: [ItemQuantity],
     expirationDate: {
         type: Date
+    }
+})
+
+const Parameters = new mongoose.Schema({
+    keepFoodListsIndependent: {
+        type: Boolean,
+        default: false
+    },
+    transferCheckedShoppingListItemsToFridge: {
+        type: Boolean,
+        default: true
     }
 })
 
@@ -63,7 +72,10 @@ const UserSchema = new mongoose.Schema({
         }]
     },
     shoppingList: [ShoppingItem],
-    fridge: [FridgeItem]
+    fridge: [FridgeItem],
+    parameters: {
+        type: Parameters
+    }
 })
 
 UserSchema.pre('save', function(next) {

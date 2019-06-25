@@ -1,6 +1,6 @@
 import User from "../models/user"
 import Recipe from "../models/recipe"
-import { addNewItems } from '../routes/utils'
+import { addNewItems, unflatIngredients } from '../routes/utils'
 
 export const saveRecipes = async function(reqUser, recipes) {
     for (const recipeID of recipes) {
@@ -22,39 +22,41 @@ export const removeRecipes = async function(userID, recipes) {
 }
 
 export const addItemsToShoppingList = async function(reqUser, items) {
-    reqUser.shoppingList.push(...items)
+    const newItems = Object.values(unflatIngredients(items))
+    reqUser.shoppingList = addNewItems(reqUser.shoppingList, newItems)
     await reqUser.save()
     return true
 }
 
 export const removeItemsFromShoppingList = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
-        { $pull: { "shoppingList": { "_id": { $in: items } } } }, {'multi': true, 'new': true}
+        { $pull: { "shoppingList": { "ingredientID": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
         .then((user) => {return Boolean(user)})
         .catch(() => {return false})
 }
 
 export const addItemsToFridge = async function(reqUser, items) {
-    reqUser.fridge.push(...items)
+    const newItems = Object.values(unflatIngredients(items))
+    reqUser.fridge = addNewItems(reqUser.fridge, newItems)
     await reqUser.save()
     return true
 }
 
 export const removeItemsFromFridge = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
-        { $pull: { "fridge": {"_id": { $in: items } } } }, {'multi': true, 'new': true}
+        { $pull: { "fridge": {"ingredientID": { $in: items } } } }, {'multi': true, 'new': true}
     ).exec()
         .then((user) => {return Boolean(user)})
         .catch(() => {return false})
 }
 
 exports.getItemsFromShoppingList = function(reqUser, items) {
-    return reqUser.shoppingList.filter(item => items.includes(item._id.toString()))
+    return reqUser.shoppingList.filter(item => items.includes(item.ingredientID.toString()))
 }
 
 exports.getItemsFromFridge = function(reqUser, items) {
-    return reqUser.fridge.filter(item => items.includes(item._id.toString()))
+    return reqUser.fridge.filter(item => items.includes(item.ingredientID.toString()))
 }
 
 exports.handleListDependencies = async function(reqUser, action, object) {
@@ -86,10 +88,7 @@ exports.handleListDependencies = async function(reqUser, action, object) {
     const newShoppingList = []
     for(const itemKey in newShoppingListObject) {
         if(itemsDiff.toRemove.includes(itemKey)) { continue }
-        newShoppingList.push({
-            ingredientID: itemKey,
-            ...newShoppingListObject[itemKey]
-        })
+        newShoppingList.push(newShoppingListObject[itemKey])
     }
 
     reqUser.shoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
@@ -105,29 +104,18 @@ const getIngredientsFromSavedRecipes = async function(reqUser) {
         .then((recipes) => {return recipes})
         .catch(() => {return []})
 
-    let ingredients = {}
+    let ingredients = []
     for(const recipe of recipes) {
-        for(const ingredient of recipe.ingredients) {
-            if(ingredients.hasOwnProperty(ingredient.ingredientID.toString())) {
-                // TO DO: add quantity according to unit
-            } else {
-                ingredients[ingredient.ingredientID.toString()] = {
-                    ingredientName: ingredient.ingredientName,
-                    quantity: ingredient.quantity,
-                    unit: ingredient.unit
-                }
-            }
-        }
+        ingredients.push(...recipe.ingredients)
     }
-    return ingredients
+    return unflatIngredients(ingredients)
 }
 
 const buildShoppingListObject = function(reqUser, items) {
     let shoppingList = {...items}
-    const ingredientIDs = Object.keys(items)
     for(const fridgeItem of reqUser.fridge) {
         const fridgeItemID = fridgeItem.ingredientID.toString()
-        if(ingredientIDs.includes(fridgeItemID)) {
+        if(items.hasOwnProperty(fridgeItemID)) {
             // TO DO: Subtract item from fridge item and add remaining to diff is any
             delete shoppingList[fridgeItemID]
         }

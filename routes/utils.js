@@ -86,35 +86,69 @@ export const getCorrespondingItem = function(itemList, itemID) {
     return {}
 }
 
+export const unflatIngredients = function(ingredients) {
+    let ingredientsObject = {}
+    for(const ingredient of ingredients) {
+        const ingredientID = ingredient.ingredientID.toString()
+        const combinedIngredient = convertFlatItemToCombinedOne(ingredient)
+
+        if(ingredientsObject.hasOwnProperty(ingredientID)) {
+            ingredientsObject[ingredientID] =
+                combineQuantities(ingredients[ingredientID], combinedIngredient)
+        } else {
+            ingredientsObject[ingredientID] = combinedIngredient
+        }
+    }
+    return ingredientsObject
+}
+
 export const convertFlatItemToCombinedOne = function(item) {
     const newItem = {...item}
-    newItem.quantities = {}
-    newItem.quantities[item.unit] = item.quantity
+    newItem.quantities = [{unit: item.unit, quantity: item.quantity}]
     delete newItem.unit
     delete newItem.quantity
     return newItem
 }
 
+
+
+export const convertListToObject = function(quantities) {
+    let quantitiesObject = {}
+    for(const quantity of quantities) {
+        quantitiesObject[quantity.unit] = quantity.quantity
+    }
+    return quantitiesObject
+}
+
+export const convertObjectToList = function(quantities) {
+    let quantitiesList = []
+    for(const unit in quantities) {
+        quantitiesList.push({unit: unit, quantity: quantities[unit]})
+    }
+    return quantitiesList
+}
+
 export const combineQuantities = function(item1, item2) {
+    item1.quantities = convertListToObject(item1.quantities)
+    item2.quantities = convertListToObject(item2.quantities)
     let combinedItem = {...item1}
     combinedItem.quantities = {}
-    if(item1.ingredientID.toString() === item2.ingredientID.toString()) {
-        for(const unit in item1.quantities) {
-            if(item2.hasOwnProperty(unit)) {
-                combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
-            } else {
-                combinedItem.quantities[unit] = item1.quantities[unit]
-            }
+
+    for(const unit in item1.quantities) {
+        if(item2.hasOwnProperty(unit)) {
+            combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
+        } else {
+            combinedItem.quantities[unit] = item1.quantities[unit]
         }
-        for(const unit in item2.quantities) {
-            if(!item1.hasOwnProperty(unit)) {
-                combinedItem.quantities[unit] = item2.quantities[unit]
-            }
-        }
-        return combinedItem
-    } else {
-        return null
     }
+    for(const unit in item2.quantities) {
+        if(!item1.hasOwnProperty(unit)) {
+            combinedItem.quantities[unit] = item2.quantities[unit]
+        }
+    }
+    combinedItem.quantities = convertObjectToList(combinedItem.quantities)
+    return combinedItem
+
 }
 
 export const addNewItems = function(userItems, newItems) {
@@ -127,8 +161,7 @@ export const addNewItems = function(userItems, newItems) {
     for(const userItem of userItems) {
         if(overlapIDs.includes(userItem.ingredientID)) {
             const newItem = getCorrespondingItem(newItems, userItem.ingredientID)
-            // TO DO: Combine i.e. add items quantity (newItem + userItem)
-            combinedItems.push(userItem)
+            combinedItems.push(combineQuantities(userItem, newItem))
         } else {
             combinedItems.push(userItem)
         }

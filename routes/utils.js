@@ -23,6 +23,30 @@ const sortAndLimit = function(obj, filterKey, limit) {
     return objToReturn
 }
 
+const convertListToObject = function(quantities) {
+    let quantitiesObject = {}
+    for(const quantity of quantities) {
+        quantitiesObject[quantity.unit] = quantity.quantity
+    }
+    return quantitiesObject
+}
+
+const convertObjectToList = function(quantities) {
+    let quantitiesList = []
+    for(const unit in quantities) {
+        quantitiesList.push({unit: unit, quantity: quantities[unit]})
+    }
+    return quantitiesList
+}
+
+const convertFlatItemToCombinedOne = function(item) {
+    const newItem = {...item}
+    newItem.quantities = [{unit: item.unit, quantity: item.quantity}]
+    delete newItem.unit
+    delete newItem.quantity
+    return newItem
+}
+
 // Public
 export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=100) {
     let scores = {}
@@ -86,48 +110,6 @@ export const getCorrespondingItem = function(itemList, itemID) {
     return {}
 }
 
-export const unflatIngredients = function(ingredients) {
-    let ingredientsObject = {}
-    for(const ingredient of ingredients) {
-        const ingredientID = ingredient.ingredientID.toString()
-        const combinedIngredient = convertFlatItemToCombinedOne(ingredient)
-
-        if(ingredientsObject.hasOwnProperty(ingredientID)) {
-            ingredientsObject[ingredientID] =
-                combineQuantities(ingredients[ingredientID], combinedIngredient)
-        } else {
-            ingredientsObject[ingredientID] = combinedIngredient
-        }
-    }
-    return ingredientsObject
-}
-
-export const convertFlatItemToCombinedOne = function(item) {
-    const newItem = {...item}
-    newItem.quantities = [{unit: item.unit, quantity: item.quantity}]
-    delete newItem.unit
-    delete newItem.quantity
-    return newItem
-}
-
-
-
-export const convertListToObject = function(quantities) {
-    let quantitiesObject = {}
-    for(const quantity of quantities) {
-        quantitiesObject[quantity.unit] = quantity.quantity
-    }
-    return quantitiesObject
-}
-
-export const convertObjectToList = function(quantities) {
-    let quantitiesList = []
-    for(const unit in quantities) {
-        quantitiesList.push({unit: unit, quantity: quantities[unit]})
-    }
-    return quantitiesList
-}
-
 export const combineQuantities = function(item1, item2) {
     item1.quantities = convertListToObject(item1.quantities)
     item2.quantities = convertListToObject(item2.quantities)
@@ -151,6 +133,22 @@ export const combineQuantities = function(item1, item2) {
 
 }
 
+export const unflatIngredients = function(ingredients) {
+    let ingredientsObject = {}
+    for(const ingredient of ingredients) {
+        const ingredientID = ingredient.ingredientID.toString()
+        const combinedIngredient = convertFlatItemToCombinedOne(ingredient)
+
+        if(ingredientsObject.hasOwnProperty(ingredientID)) {
+            ingredientsObject[ingredientID] =
+                combineQuantities(ingredients[ingredientID], combinedIngredient)
+        } else {
+            ingredientsObject[ingredientID] = combinedIngredient
+        }
+    }
+    return ingredientsObject
+}
+
 export const addNewItems = function(userItems, newItems) {
     let combinedItems = []
 
@@ -172,6 +170,5 @@ export const addNewItems = function(userItems, newItems) {
             combinedItems.push(newItem)
         }
     }
-
     return combinedItems
 }

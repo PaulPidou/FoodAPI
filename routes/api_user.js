@@ -1,7 +1,7 @@
 import express from 'express'
 
 import Recipe from "../models/recipe"
-import {checkIfIngredientsExist, checkIfRecipesExist} from '../middlewares/checkExistence'
+import { checkIfIngredientsExist, checkIfRecipesExist } from '../middlewares/checkExistence'
 import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList,
     removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies
 } from '../utils/user'

@@ -1,6 +1,6 @@
 import User from "../models/user"
 import Recipe from "../models/recipe"
-import { addNewItems, unflatIngredients } from '../routes/utils'
+import { addNewItems, removeItems, unflatIngredients, combineQuantities } from '../routes/utils'
 
 export const saveRecipes = async function(reqUser, recipes) {
     for (const recipeID of recipes) {
@@ -96,8 +96,19 @@ exports.handleListDependencies = async function(reqUser, action, object) {
     return bool
 }
 
+export const removeCookedIngredients = async function(reqUser, recipeIDs) {
+    const cookedIngredients = Object.values(await getIngredientsFromRecipes(recipeIDs))
+    reqUser.shoppingList = removeItems(reqUser.shoppingList, cookedIngredients)
+    await reqUser.save()
+    return true
+}
+
 const getIngredientsFromSavedRecipes = async function(reqUser) {
     const recipeIDs = reqUser.savedRecipes.map(item => item.recipeID)
+    return await getIngredientsFromRecipes(recipeIDs)
+}
+
+const getIngredientsFromRecipes = async function(recipeIDs) {
     const recipes = await Recipe.find({_id: { $in: recipeIDs}})
         .select({'ingredients.ingredientID': 1, 'ingredients.ingredientName': 1,
             'ingredients.quantity': 1, 'ingredients.unit': 1}).exec()
@@ -116,8 +127,13 @@ const buildShoppingListObject = function(reqUser, items) {
     for(const fridgeItem of reqUser.fridge) {
         const fridgeItemID = fridgeItem.ingredientID.toString()
         if(items.hasOwnProperty(fridgeItemID)) {
-            // TO DO: Subtract item from fridge item and add remaining to diff is any
-            delete shoppingList[fridgeItemID]
+            // Subtract item from fridge item and add remaining to diff is any
+            const combinedItem = combineQuantities(items[fridgeItemID], fridgeItem, 'GET_REMAINING')
+            if(combinedItem.quantities.length > 0) {
+                shoppingList[fridgeItemID] = combinedItem
+            } else {
+                delete shoppingList[fridgeItemID]
+            }
         }
     }
     return shoppingList

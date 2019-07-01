@@ -103,14 +103,14 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
 
 export const getCorrespondingItem = function(itemList, itemID) {
     for(const item of itemList) {
-        if(item.ingredientID === itemID) {
+        if(item.ingredientID.toString() === itemID) {
             return item
         }
     }
     return {}
 }
 
-export const combineQuantities = function(item1, item2) {
+export const combineQuantities = function(item1, item2, operation) {
     item1.quantities = convertListToObject(item1.quantities)
     item2.quantities = convertListToObject(item2.quantities)
     let combinedItem = {...item1}
@@ -118,19 +118,29 @@ export const combineQuantities = function(item1, item2) {
 
     for(const unit in item1.quantities) {
         if(item2.hasOwnProperty(unit)) {
-            combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
+            if(operation === 'ADD') {
+                combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
+            } else { // SUBTRACT or GET_REMAINING
+                const diff = item1.quantities[unit] - item2.quantities[unit]
+                if(diff > 0) {
+                    combinedItem.quantities[unit] = diff
+                }
+            }
         } else {
             combinedItem.quantities[unit] = item1.quantities[unit]
         }
     }
-    for(const unit in item2.quantities) {
-        if(!item1.hasOwnProperty(unit)) {
-            combinedItem.quantities[unit] = item2.quantities[unit]
+
+    if(operation !== 'GET_REMAINING') {
+        for(const unit in item2.quantities) {
+            if(!item1.hasOwnProperty(unit)) {
+                combinedItem.quantities[unit] = item2.quantities[unit]
+            }
         }
     }
+
     combinedItem.quantities = convertObjectToList(combinedItem.quantities)
     return combinedItem
-
 }
 
 export const unflatIngredients = function(ingredients) {
@@ -141,7 +151,7 @@ export const unflatIngredients = function(ingredients) {
 
         if(ingredientsObject.hasOwnProperty(ingredientID)) {
             ingredientsObject[ingredientID] =
-                combineQuantities(ingredients[ingredientID], combinedIngredient)
+                combineQuantities(ingredients[ingredientID], combinedIngredient, 'ADD')
         } else {
             ingredientsObject[ingredientID] = combinedIngredient
         }
@@ -152,23 +162,45 @@ export const unflatIngredients = function(ingredients) {
 export const addNewItems = function(userItems, newItems) {
     let combinedItems = []
 
-    const userItemsID = userItems.map(item => item.ingredientID)
-    const newItemsID = newItems.map(item => item.ingredientID)
+    const userItemsID = userItems.map(item => item.ingredientID.toString())
+    const newItemsID = newItems.map(item => item.ingredientID.toString())
     const overlapIDs = userItemsID.filter(value => newItemsID.includes(value))
 
     for(const userItem of userItems) {
-        if(overlapIDs.includes(userItem.ingredientID)) {
-            const newItem = getCorrespondingItem(newItems, userItem.ingredientID)
-            combinedItems.push(combineQuantities(userItem, newItem))
+        if(overlapIDs.includes(userItem.ingredientID.toString())) {
+            const newItem = getCorrespondingItem(newItems, userItem.ingredientID.toString())
+            combinedItems.push(combineQuantities(userItem, newItem, 'ADD'))
         } else {
             combinedItems.push(userItem)
         }
     }
 
     for(const newItem of newItems) {
-        if(!overlapIDs.includes(newItem.ingredientID)) {
+        if(!overlapIDs.includes(newItem.ingredientID.toString())) {
             combinedItems.push(newItem)
         }
     }
+    return combinedItems
+}
+
+export const removeItems = function(userItems, itemsToRemove) {
+    let combinedItems = []
+
+    const userItemsID = userItems.map(item => item.ingredientID.toString())
+    const itemsToRemoveID = itemsToRemove.map(item => item.ingredientID.toString())
+    const overlapIDs = userItemsID.filter(value => itemsToRemoveID.includes(value))
+
+    for(const userItem of userItems) {
+        if(overlapIDs.includes(userItem.ingredientID.toString())) {
+            const newItem = getCorrespondingItem(itemsToRemove, userItem.ingredientID.toString())
+            const combinedItem = combineQuantities(userItem, newItem, 'SUBTRACT')
+            if(combinedItem.quantities.length > 0) {
+                combinedItems.push(combinedItem)
+            }
+        } else {
+            combinedItems.push(userItem)
+        }
+    }
+    // No need to loop over itemsToRemove as we can only remove items which are within the userItems
     return combinedItems
 }

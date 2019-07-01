@@ -3,7 +3,7 @@ import express from 'express'
 import Recipe from "../models/recipe"
 import { checkIfIngredientsExist, checkIfRecipesExist } from '../middlewares/checkExistence'
 import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList,
-    removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies
+    removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies, removeCookedIngredients
 } from '../utils/user'
 import { getCorrespondingItem } from './utils'
 
@@ -76,7 +76,7 @@ router.post('/savedrecipes/delete/recipes', async function(req, res) {
 router.post('/savedrecipes/cook/recipes', async function(req, res) {
     const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
     const bool = await removeRecipes(req.user._id, req.body.recipes)
-    // TO DO: Remove items from fridge
+    await removeCookedIngredients(req.user, req.body.recipes)
     bool ? res.json({ message: `${msgBegin}  removed` }) : res.status(404).json({ message: `${msgBegin}  not found` })
 })
 

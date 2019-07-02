@@ -117,7 +117,7 @@ export const combineQuantities = function(item1, item2, operation) {
     combinedItem.quantities = {}
 
     for(const unit in item1.quantities) {
-        if(item2.hasOwnProperty(unit)) {
+        if(item2.quantities.hasOwnProperty(unit)) {
             if(operation === 'ADD') {
                 combinedItem.quantities[unit] = item1.quantities[unit] + item2.quantities[unit]
             } else { // SUBTRACT or GET_REMAINING
@@ -131,9 +131,9 @@ export const combineQuantities = function(item1, item2, operation) {
         }
     }
 
-    if(operation !== 'GET_REMAINING') {
+    if(operation === 'ADD') {
         for(const unit in item2.quantities) {
-            if(!item1.hasOwnProperty(unit)) {
+            if(!item1.quantities.hasOwnProperty(unit)) {
                 combinedItem.quantities[unit] = item2.quantities[unit]
             }
         }
@@ -141,6 +141,73 @@ export const combineQuantities = function(item1, item2, operation) {
 
     combinedItem.quantities = convertObjectToList(combinedItem.quantities)
     return combinedItem
+}
+
+export const getDiffQuantities = function(shoppingListItem, neededItem) {
+    shoppingListItem.quantities = convertListToObject(shoppingListItem.quantities)
+    neededItem.quantities = convertListToObject(neededItem.quantities)
+
+    let toKeepQuantities = {}
+    let toRemoveQuantities = {}
+    for(const unit in shoppingListItem.quantities) {
+        if(neededItem.quantities.hasOwnProperty(unit)) {
+            const diff = shoppingListItem.quantities[unit] - neededItem.quantities[unit]
+            if(diff > 0) {
+                toKeepQuantities[unit] = diff
+            } else if(diff < 0) {
+                toRemoveQuantities[unit] = Math.abs(diff)
+            }
+        } else {
+            toKeepQuantities[unit] = shoppingListItem.quantities[unit]
+        }
+    }
+
+    for(const unit in neededItem.quantities) {
+        if(!shoppingListItem.quantities.hasOwnProperty(unit)) {
+            toRemoveQuantities[unit] = neededItem.quantities[unit]
+        }
+    }
+
+    toKeepQuantities = convertObjectToList(toKeepQuantities)
+    toRemoveQuantities = convertObjectToList(toRemoveQuantities)
+
+    if(toKeepQuantities.length > 0) {
+        if(toRemoveQuantities.length > 0) {
+            return {
+                toKeep: {
+                    ...shoppingListItem,
+                    quantities: toKeepQuantities
+                },
+                toRemove: {
+                    ...shoppingListItem,
+                    quantities: toRemoveQuantities
+                }
+            }
+        } else {
+            return {
+                toKeep: {
+                    ...shoppingListItem,
+                    quantities: toKeepQuantities
+                },
+                toRemove: {}
+            }
+        }
+    } else {
+        if(toRemoveQuantities.length > 0) {
+            return {
+                toKeep: {},
+                toRemove: {
+                    ...shoppingListItem,
+                    quantities: toRemoveQuantities
+                }
+            }
+        } else {
+            return {
+                toKeep: {},
+                toRemove: {}
+            }
+        }
+    }
 }
 
 export const unflatIngredients = function(ingredients) {

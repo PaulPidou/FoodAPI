@@ -1,6 +1,6 @@
 import User from "../models/user"
 import Recipe from "../models/recipe"
-import { addNewItems, removeItems, unflatIngredients, combineQuantities } from '../routes/utils'
+import { addNewItems, removeItems, unflatIngredients, combineQuantities, getDiffQuantities } from '../routes/utils'
 
 export const saveRecipes = async function(reqUser, recipes) {
     for (const recipeID of recipes) {
@@ -87,8 +87,14 @@ exports.handleListDependencies = async function(reqUser, action, object) {
 
     const newShoppingList = []
     for(const itemKey in newShoppingListObject) {
-        if(itemsDiff.toRemove.includes(itemKey)) { continue }
-        newShoppingList.push(newShoppingListObject[itemKey])
+        if(itemsDiff.toRemove.hasOwnProperty(itemKey)) {
+            const combinedItem = combineQuantities(newShoppingListObject[itemKey], itemsDiff.toRemove[itemKey], 'SUBTRACT')
+            if(combinedItem.quantities.length > 0) {
+                newShoppingList.push(combinedItem)
+            }
+        } else {
+            newShoppingList.push(newShoppingListObject[itemKey])
+        }
     }
 
     reqUser.shoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
@@ -141,21 +147,26 @@ const buildShoppingListObject = function(reqUser, items) {
 
 const getDiffBetweenShoppingLists = function(reqUser, shoppingListObject) {
     let toKeep = []
+    let toRemove = {}
     for(const slItem of reqUser.shoppingList) {
-        if(shoppingListObject.hasOwnProperty(slItem.ingredientID.toString())) {
-            // Check diff at quantity and unit level
+        const ingredientID = slItem.ingredientID.toString()
+        if(shoppingListObject.hasOwnProperty(ingredientID)) {
+            const diffQuantities = getDiffQuantities(slItem, shoppingListObject[ingredientID])
+            if(Object.keys(diffQuantities.toKeep).length > 0) {
+                toKeep.push(diffQuantities.toKeep)
+            }
+            if(Object.keys(diffQuantities.toRemove).length > 0) {
+                toRemove[ingredientID] = diffQuantities.toRemove
+            }
         } else {
             toKeep.push(slItem)
         }
     }
 
-    let toRemove = []
     const itemIDs = reqUser.shoppingList.map(item => item.ingredientID.toString())
     for(const itemKey in shoppingListObject) {
-        if(itemIDs.includes(itemKey)) {
-            // Check diff at quantity and unit level
-        } else {
-            toRemove.push(itemKey)
+        if(!itemIDs.includes(itemKey)) {
+            toRemove[itemKey] = shoppingListObject[itemKey]
         }
     }
     return { toKeep, toRemove }

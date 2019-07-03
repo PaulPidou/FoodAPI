@@ -131,6 +131,12 @@ export const addItemsToShoppingList = async function(reqUser, items) {
     return true
 }
 
+/**
+ * Remove items from the shopping list of a given user
+ * @param userID - ID of the user for whom items are removed
+ * @param {Array<string>} items - List of ingredient IDs (items to remove)
+ * @returns {Promise<boolean | never>} - Indication if the operation succeeded or not
+ */
 export const removeItemsFromShoppingList = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
         { $pull: { "shoppingList": { "ingredientID": { $in: items } } } }, {'multi': true, 'new': true}
@@ -139,6 +145,12 @@ export const removeItemsFromShoppingList = async function(userID, items) {
         .catch(() => {return false})
 }
 
+/**
+ * Add items to the fridge of a given user
+ * @param reqUser - User for whom items are added
+ * @param {Array<Object>} items - List of items to add
+ * @returns {Promise<boolean>} - Return true
+ */
 export const addItemsToFridge = async function(reqUser, items) {
     const newItems = Object.values(unflatIngredients(items))
     reqUser.fridge = addNewItems(reqUser.fridge, newItems)
@@ -146,6 +158,12 @@ export const addItemsToFridge = async function(reqUser, items) {
     return true
 }
 
+/**
+ * Remove items from the fridge of a given user
+ * @param userID - ID of the user for whom items are removed
+ * @param {Array<string>} items - List of ingredient IDs (items to remove)
+ * @returns {Promise<boolean | never>} - Indication if the operation succeeded or not
+ */
 export const removeItemsFromFridge = async function(userID, items) {
     return User.findByIdAndUpdate(userID,
         { $pull: { "fridge": {"ingredientID": { $in: items } } } }, {'multi': true, 'new': true}
@@ -154,14 +172,46 @@ export const removeItemsFromFridge = async function(userID, items) {
         .catch(() => {return false})
 }
 
+/**
+ * Remove cooked ingredients from fridge for a given user
+ * @param reqUser - A given user
+ * @param {Array<string>} recipeIDs - List of recipes IDs
+ * @returns {Promise<boolean>} - Return true
+ */
+export const removeCookedIngredients = async function(reqUser, recipeIDs) {
+    const cookedIngredients = Object.values(await getIngredientsFromRecipes(recipeIDs))
+    reqUser.frdige = removeItems(reqUser.fridge, cookedIngredients)
+    await reqUser.save()
+    return true
+}
+
+/**
+ * Get items from the shopping list of a given user
+ * @param reqUser - A given user
+ * @param {Array<string>} items - List of ingredient IDs
+ * @returns {Array<Object>} - Items within the shopping list matching the given *items*
+ */
 export const getItemsFromShoppingList = function(reqUser, items) {
     return reqUser.shoppingList.filter(item => items.includes(item.ingredientID.toString()))
 }
 
+/**
+ * Get items from the fridge of a given user
+ * @param reqUser - A given user
+ * @param {Array<string>} items - List of ingredient IDs
+ * @returns {Array<Object>} - Items within the fridge matching the given *items*
+ */
 export const getItemsFromFridge = function(reqUser, items) {
     return reqUser.fridge.filter(item => items.includes(item.ingredientID.toString()))
 }
 
+/**
+ * Handle dependencies between user's lists (SavedRecipes, Fridge, ShoppingList)
+ * @param reqUser - A given user
+ * @param {string} action - An action to perform
+ * @param {Array<Object>} object - Object of the action
+ * @returns {Promise<boolean>} - Indication if the operation succeeded or not
+ */
 export const handleListDependencies = async function(reqUser, action, object) {
     const currentNeededIngredients = await getIngredientsFromSavedRecipes(reqUser)
     const currentShoppingListObject = buildShoppingListObject(reqUser, currentNeededIngredients)
@@ -203,11 +253,4 @@ export const handleListDependencies = async function(reqUser, action, object) {
     reqUser.shoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
     await reqUser.save()
     return bool
-}
-
-export const removeCookedIngredients = async function(reqUser, recipeIDs) {
-    const cookedIngredients = Object.values(await getIngredientsFromRecipes(recipeIDs))
-    reqUser.shoppingList = removeItems(reqUser.shoppingList, cookedIngredients)
-    await reqUser.save()
-    return true
 }

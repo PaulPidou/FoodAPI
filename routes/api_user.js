@@ -100,6 +100,23 @@ router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, 
     res.json({ message: 'Items saved' })
 })
 
+router.post('/shoppinglist/update/item/', async function(req, res) {
+    let newShoppingList = []
+    for(const item in req.user.shoppingList) {
+        if(res.body.item.ingredientID === item.ingredientID.toString()) {
+            newShoppingList.push({
+                ...item,
+                quantities: res.body.item.quantities
+            })
+        } else {
+            newShoppingList.push(item)
+        }
+    }
+    req.user.shoppingList = newShoppingList
+    await req.user.save()
+    res.json({ message: 'Items updated' })
+})
+
 router.post('/shoppinglist/items/from/recipes', checkIfRecipesExist, async function(req, res) {
     let itemsToAdd = []
     for(const recipe of res.locals.recipes) {
@@ -140,6 +157,24 @@ router.post('/fridge/items', checkIfIngredientsExist, async function(req, res) {
     }
     await addItemsToFridge(req.user, items)
     res.json({ message: 'Items saved' })
+})
+
+router.post('/fridge/update/item/', async function(req, res) {
+    let newFridge = []
+    for(const item in req.user.fridge) {
+        if(res.body.item.ingredientID === item.ingredientID.toString()) {
+            newFridge.push({
+                ...item,
+                quantities: res.body.item.quantities,
+                expirationDate: res.body.item.expirationDate
+            })
+        } else {
+            newFridge.push(item)
+        }
+    }
+    req.user.fridge = newFridge
+    await req.user.save()
+    res.json({ message: 'Items updated' })
 })
 
 router.post('/fridge/delete/items', async function(req, res) {

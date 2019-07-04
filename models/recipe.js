@@ -101,8 +101,12 @@ RecipeSchema.pre('validate', async function(next) {
         const ingredient = await Ingredient.findOne({name: recipeIngredient.ingredientName}).exec()
         if(ingredient) {
             recipeIngredient_cpy.ingredientID = ingredient._id
+            await Ingredient.findByIdAndUpdate(ingredient._id, {$addToSet: {'units': recipeIngredient.unit.toLowerCase()}})
         } else {
-            recipeIngredient_cpy.ingredientID = await new Ingredient({name: recipeIngredient.ingredientName}).save()
+            recipeIngredient_cpy.ingredientID = await new Ingredient({
+                name: recipeIngredient.ingredientName,
+                units: [recipeIngredient.unit.toLowerCase()]
+            }).save()
         }
         ingredients.push(recipeIngredient_cpy)
     }

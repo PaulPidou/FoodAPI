@@ -7,6 +7,9 @@ const IngredientSchema = new mongoose.Schema({
         index: true,
         unique: true
     },
+    units: {
+        type:[String]
+    },
     recipes: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Recipe'

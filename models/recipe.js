@@ -118,7 +118,7 @@ RecipeSchema.post('save', async function() {
     const recipe = this
 
     for (const recipeIngredient of recipe.ingredients) {
-        const ingredient = await Ingredient.findOne({name: recipeIngredient.name}).exec()
+        const ingredient = await Ingredient.findOne({name: recipeIngredient.ingredientName}).exec()
         if (ingredient) {
             await Ingredient.findByIdAndUpdate(ingredient._id, {$push: {'recipes': recipe._id}})
         }

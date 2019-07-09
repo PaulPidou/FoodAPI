@@ -74,7 +74,8 @@ const UserSchema = new mongoose.Schema({
     shoppingList: [ShoppingItem],
     fridge: [FridgeItem],
     parameters: {
-        type: Parameters
+        type: Parameters,
+        default: {keepFoodListsIndependent: false, transferCheckedShoppingListItemsToFridge: true}
     }
 })
 

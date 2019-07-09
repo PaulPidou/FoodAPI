@@ -235,8 +235,10 @@ export const handleListDependencies = async function(reqUser, action, object) {
             break
     }
 
-    const newNeededIngredients = await getIngredientsFromSavedRecipes(reqUser)
-    const newShoppingListObject = buildShoppingListObject(reqUser, newNeededIngredients)
+    const user = await User.findById(reqUser._id)
+
+    const newNeededIngredients = await getIngredientsFromSavedRecipes(user)
+    const newShoppingListObject = buildShoppingListObject(user, newNeededIngredients)
 
     const newShoppingList = []
     for(const itemKey in newShoppingListObject) {

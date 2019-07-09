@@ -4,7 +4,7 @@ import Recipe from "../models/recipe"
 exports.checkIfIngredientsExist = function(req, res, next) {
     let ids = req.params.ingredients ? req.params.ingredients.split(',') : req.body.ingredients
 
-    if(!ids.length) {
+    if(!ids || !ids.length) {
         res.status(422).json({message: "Invalid input"})
         return
     }
@@ -24,7 +24,7 @@ exports.checkIfIngredientsExist = function(req, res, next) {
 exports.checkIfRecipesExist = function(req, res, next) {
     const ids = req.params.recipes ? req.params.recipes.split(',') : req.body.recipes
 
-    if(!ids.length) {
+    if(!ids || !ids.length) {
         res.status(422).json({ message: "Invalid input" })
         return
     }

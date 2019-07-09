@@ -40,11 +40,11 @@ const convertObjectToList = function(quantities) {
 }
 
 const convertFlatItemToCombinedOne = function(item) {
-    const newItem = {...item}
-    newItem.quantities = [{unit: item.unit, quantity: item.quantity}]
-    delete newItem.unit
-    delete newItem.quantity
-    return newItem
+    return {
+        ingredientID: item.ingredientID,
+        ingredientName: item.ingredientName,
+        quantities: [{unit: item.unit, quantity: item.quantity}]
+    }
 }
 
 // Public
@@ -110,9 +110,15 @@ export const getCorrespondingItem = function(itemList, itemID) {
     return {}
 }
 
-export const combineQuantities = function(item1, item2, operation) {
-    item1.quantities = convertListToObject(item1.quantities)
-    item2.quantities = convertListToObject(item2.quantities)
+export const combineQuantities = function(currentItem1, currentItem2, operation) {
+    let item1 = {
+        ...currentItem1,
+        quantities: convertListToObject(currentItem1.quantities)
+    }
+    let item2 = {
+        ...currentItem2,
+        quantities: convertListToObject(currentItem2.quantities)
+    }
     let combinedItem = {...item1}
     combinedItem.quantities = {}
 
@@ -143,9 +149,13 @@ export const combineQuantities = function(item1, item2, operation) {
     return combinedItem
 }
 
-export const getDiffQuantities = function(shoppingListItem, neededItem) {
-    shoppingListItem.quantities = convertListToObject(shoppingListItem.quantities)
+export const getDiffQuantities = function(currentShoppingListItem, neededItem) {
+    let shoppingListItem = {
+        ...currentShoppingListItem.toObject(),
+        quantities: convertListToObject(currentShoppingListItem.quantities)
+    }
     neededItem.quantities = convertListToObject(neededItem.quantities)
+
 
     let toKeepQuantities = {}
     let toRemoveQuantities = {}
@@ -218,7 +228,7 @@ export const unflatIngredients = function(ingredients) {
 
         if(ingredientsObject.hasOwnProperty(ingredientID)) {
             ingredientsObject[ingredientID] =
-                combineQuantities(ingredients[ingredientID], combinedIngredient, 'ADD')
+                combineQuantities(ingredientsObject[ingredientID], combinedIngredient, 'ADD')
         } else {
             ingredientsObject[ingredientID] = combinedIngredient
         }

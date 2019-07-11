@@ -47,6 +47,14 @@ const convertFlatItemToCombinedOne = function(item) {
     }
 }
 
+const getObject = function(obj) {
+    if(typeof obj.toObject === 'function') {
+        return obj.toObject()
+    } else {
+        return obj
+    }
+}
+
 // Public
 export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=100) {
     let scores = {}
@@ -149,13 +157,15 @@ export const combineQuantities = function(currentItem1, currentItem2, operation)
     return combinedItem
 }
 
-export const getDiffQuantities = function(currentShoppingListItem, neededItem) {
+export const getDiffQuantities = function(currentShoppingListItem, currentNeededItem) {
     let shoppingListItem = {
-        ...currentShoppingListItem.toObject(),
+        ...getObject(currentShoppingListItem),
         quantities: convertListToObject(currentShoppingListItem.quantities)
     }
-    neededItem.quantities = convertListToObject(neededItem.quantities)
-
+    let neededItem = {
+        ...getObject(currentNeededItem),
+        quantities: convertListToObject(currentNeededItem.quantities)
+    }
 
     let toKeepQuantities = {}
     let toRemoveQuantities = {}

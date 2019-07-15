@@ -1,4 +1,4 @@
-/* global describe it before after*/
+/* global describe it */
 
 import chai from 'chai'
 import { getCorrespondingItem, combineQuantities, getDiffQuantities, unflatIngredients,

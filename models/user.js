@@ -38,6 +38,7 @@ const FridgeItem = new mongoose.Schema({
 })
 
 const Parameters = new mongoose.Schema({
+    _id: false,
     keepFoodListsIndependent: {
         type: Boolean,
         default: false

@@ -7,7 +7,6 @@ import { getCorrespondingItem, combineQuantities, getDiffQuantities, unflatIngre
 chai.should()
 
 describe('routes/utils', function() {
-
     it('getCorrespondingItem()', function() {
         const itemList = [
             {

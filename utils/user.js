@@ -21,8 +21,8 @@ const getIngredientsFromRecipes = async function(recipeIDs) {
     const recipes = await Recipe.find({_id: { $in: recipeIDs}})
         .select({'ingredients.ingredientID': 1, 'ingredients.ingredientName': 1,
             'ingredients.quantity': 1, 'ingredients.unit': 1}).exec()
-        .then((recipes) => {return recipes})
-        .catch(() => {return []})
+        .then((recipes) => { return recipes })
+        .catch(() => { return [] })
 
     let ingredients = []
     for(const recipe of recipes) {

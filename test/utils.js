@@ -1,248 +1,184 @@
-/* global describe it */
+/* global describe it afterEach */
 
 import chai from 'chai'
-import { getCorrespondingItem, combineQuantities, getDiffQuantities, unflatIngredients,
-    addNewItems, removeItems } from '../routes/utils'
+import sinon from 'sinon'
+import 'sinon-mongoose'
+
+import Recipe from '../models/recipe'
+import User from '../models/user'
+import { handleListDependencies } from '../utils/user'
 
 chai.should()
 
-describe('routes/utils', function() {
-    it('getCorrespondingItem()', function() {
-        const itemList = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A'
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B'
-            }
-        ]
-
-        const item = getCorrespondingItem(itemList, '234')
-        item.should.have.own.property('ingredientName')
-        item.ingredientName.should.equal('B')
-
+describe('utils/users', function() {
+    afterEach(function() {
+        Recipe.find.restore()
+        User.findById.restore()
+        if(User.hasOwnProperty('findByIdAndUpdate')) {
+            User.findByIdAndUpdate.restore()
+        }
     })
 
-    it('combineQuantities()', function() {
-        const items = [
+    it('handleListDependencies(SAVE_RECIPES) - Basic', async function() {
+        const user = {
+            _id: "5d1f7df9df5a80e5e1fd3eb6",
+            savedRecipes: [],
+            fridge: [],
+            shoppingList: [],
+            save: function() {}
+        }
+        const recipes = [
             {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 100}]
-            },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 200}]
-            },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 50}, {unit: '', quantity: 2}]
+                _id: "5d24c810fee493ef6c987d6f",
+                ingredients: [
+                    {
+                        "ingredientName":"tortilla",
+                        "unit":"",
+                        "quantity":1,
+                        "ingredientID":"5d24c810fee493ef6c987d70"
+                    },
+                    {
+                        "ingredientName":"abricot",
+                        "unit":"",
+                        "quantity":6,
+                        "ingredientID":"5d24c811fee493ef6c987d71"
+                    },
+                    {
+                        "ingredientName":"beurre",
+                        "unit":"g",
+                        "quantity":10,
+                        "ingredientID":"5d24c811fee493ef6c987d72"
+                    },
+                    {
+                        "ingredientName":"sucre vanillé",
+                        "unit":"sachet",
+                        "quantity":2,
+                        "ingredientID":"5d24c811fee493ef6c987d73"
+                    }
+                    ]
             }
         ]
 
-        let combinedItem = combineQuantities(items[0], items[1], 'ADD')
-        combinedItem.quantities.should.be.a('array')
-        combinedItem.quantities[0].quantity.should.be.equal(300)
+        const mockFind = {
+            select: function () {
+                return this
+            },
+            exec: sinon.stub().resolves([])
+        }
 
-        combinedItem = combineQuantities(items[0], items[2], 'ADD')
-        combinedItem.quantities.should.be.a('array')
-        combinedItem.quantities.should.deep.include({unit: 'g', quantity: 150})
-        combinedItem.quantities.should.deep.include({unit: '', quantity: 2})
+        const s = sinon.stub(Recipe, 'find')
+        s.withArgs({_id: { $in: [] }})
+            .returns(mockFind)
 
-        combinedItem = combineQuantities(items[0], items[1], 'SUBTRACT')
-        combinedItem.quantities.should.be.a('array')
-        combinedItem.quantities.should.be.empty
+        s.withArgs({_id: { $in: [recipes[0]._id] }})
+            .returns({
+                ...mockFind,
+                exec: sinon.stub().resolves(recipes)
+            })
 
-        combinedItem = combineQuantities(items[1], items[2], 'SUBTRACT')
-        combinedItem.quantities.should.be.a('array')
-        combinedItem.quantities.should.deep.include({unit: 'g', quantity: 150})
-        combinedItem.quantities.should.deep.not.include({unit: '', quantity: 2})
+        sinon.mock(User)
+            .expects('findById')
+            .withArgs(user._id)
+            .resolves(user)
 
-        combinedItem = combineQuantities(items[2], items[0], 'SUBTRACT')
-        combinedItem.quantities.should.be.a('array')
-        combinedItem.quantities.should.deep.equal([{unit: '', quantity: 2}])
+        await handleListDependencies(user, 'SAVE_RECIPES', [recipes[0]._id])
+        user.savedRecipes.should.have.lengthOf(1)
+        user.savedRecipes[0].recipeID.should.be.equal(recipes[0]._id)
+        user.shoppingList.should.have.lengthOf(4)
     })
 
-    it('getDiffQuantities()', function() {
-        const items = [
+    it('handleListDependencies(REMOVE_RECIPES) - Basic', async function() {
+        let user = {
+            _id: "5d1f7df9df5a80e5e1fd3eb6",
+            savedRecipes:[{
+                recipeID: "5d24c810fee493ef6c987d6f",
+                savingDate: 1563386356410
+            }],
+            fridge: [],
+            shoppingList: [{
+                ingredientID: "5d24c810fee493ef6c987d70",
+                ingredientName: "tortilla",
+                quantities: [{ unit: "", quantity: 1 }]
+            }, {
+                ingredientID: "5d24c811fee493ef6c987d71",
+                ingredientName: "abricot",
+                quantities: [{ unit: "", quantity: 6 }]
+            },{
+                ingredientID: "5d24c811fee493ef6c987d72",
+                ingredientName: "beurre",
+                quantities: [{ unit:"g", quantity: 10 }]
+            }, {
+                ingredientID: "5d24c811fee493ef6c987d73",
+                ingredientName: "sucre vanillé",
+                quantities: [{ unit:"sachet", quantity: 2 }]
+            }],
+            save: function() {}
+        }
+        const recipes = [
             {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 100}]
-            },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 200}]
-            },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 50}, {unit: '', quantity: 2}]
+                _id: "5d24c810fee493ef6c987d6f",
+                ingredients: [
+                    {
+                        "ingredientName":"tortilla",
+                        "unit":"",
+                        "quantity":1,
+                        "ingredientID":"5d24c810fee493ef6c987d70"
+                    },
+                    {
+                        "ingredientName":"abricot",
+                        "unit":"",
+                        "quantity":6,
+                        "ingredientID":"5d24c811fee493ef6c987d71"
+                    },
+                    {
+                        "ingredientName":"beurre",
+                        "unit":"g",
+                        "quantity":10,
+                        "ingredientID":"5d24c811fee493ef6c987d72"
+                    },
+                    {
+                        "ingredientName":"sucre vanillé",
+                        "unit":"sachet",
+                        "quantity":2,
+                        "ingredientID":"5d24c811fee493ef6c987d73"
+                    }
+                ]
             }
         ]
 
-        let diff = getDiffQuantities(items[1], items[0])
-        diff.should.have.own.property('toKeep')
-        diff.should.have.own.property('toRemove')
-        diff.toRemove.should.be.empty
-        diff.toKeep.quantities.should.deep.equal([{unit: 'g', quantity: 100}])
-
-        diff = getDiffQuantities(items[0], items[1])
-        diff.should.have.own.property('toKeep')
-        diff.should.have.own.property('toRemove')
-        diff.toKeep.should.be.empty
-        diff.toRemove.quantities.should.deep.equal([{unit: 'g', quantity: 100}])
-
-        diff = getDiffQuantities(items[2], items[2])
-        diff.should.have.own.property('toKeep')
-        diff.should.have.own.property('toRemove')
-        diff.toKeep.should.be.empty
-        diff.toRemove.should.be.empty
-
-        diff = getDiffQuantities(items[1], items[2])
-        diff.should.have.own.property('toKeep')
-        diff.should.have.own.property('toRemove')
-        diff.toKeep.quantities.should.deep.equal([{unit: 'g', quantity: 150}])
-        diff.toRemove.quantities.should.deep.equal([{unit: '', quantity: 2}])
-    })
-
-    it('unflatIngredients()', function() {
-        const ingredients = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantity: 100,
-                unit: 'g'
+        const mockFind = {
+            select: function () {
+                return this
             },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantity: 200,
-                unit: 'g'
-            },
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantity: 2,
-                unit: ''
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantity: 20,
-                unit: 'cl'
-            }
-        ]
+            exec: sinon.stub().resolves([])
+        }
 
-        const unflatted = unflatIngredients(ingredients)
-        unflatted.should.have.own.property('123')
-        unflatted.should.have.own.property('234')
-        unflatted['123'].quantities.should.deep.equal([{unit: 'g', quantity: 300}, {unit: '', quantity: 2}])
-        unflatted['234'].quantities.should.deep.equal([{unit: 'cl', quantity: 20}])
-    })
+        const s = sinon.stub(Recipe, 'find')
+        s.withArgs({_id: { $in: [recipes[0]._id] }})
+            .returns({
+                ...mockFind,
+                exec: sinon.stub().resolves(recipes)
+            })
 
-    it('addNewItems()', function() {
-        const userItems = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 100}]
-            }
-        ]
-        const newItems = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 50}, {unit: '', quantity: 2}]
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantities: [{unit: 'cl', quantity: 20}]
-            }
-        ]
+        s.withArgs({_id: { $in: [] }})
+            .returns(mockFind)
 
-        let combinedItems = addNewItems(userItems, newItems)
-        combinedItems.length.should.be.equal(2)
-        combinedItems.should.deep.equal([
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 150}, {unit: '', quantity: 2}]
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantities: [{unit: 'cl', quantity: 20}]
-            }
-            ])
+        sinon.mock(User)
+            .expects('findByIdAndUpdate')
+            .withArgs(user._id,
+                { $pull: { "savedRecipes": {"recipeID": {$in: [recipes[0]._id]}}}}, {'multi': true, 'new': true})
+            .chain('exec')
+            .resolves(true)
 
-        combinedItems = addNewItems(newItems, userItems)
-        combinedItems.length.should.be.equal(2)
-        combinedItems.should.deep.equal([
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 150}, {unit: '', quantity: 2}]
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantities: [{unit: 'cl', quantity: 20}]
-            }
-        ])
-    })
+        sinon.mock(User)
+            .expects('findById')
+            .withArgs("5d1f7df9df5a80e5e1fd3eb6")
+            .resolves({
+                ...user,
+                savedRecipes: []
+            })
 
-    it('removeItems()', function() {
-        const items1 = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 100}]
-            }
-        ]
-        const items2 = [
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 50}, {unit: '', quantity: 2}]
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantities: [{unit: 'cl', quantity: 20}]
-            }
-        ]
-
-        let combinedItems = removeItems(items1, items2)
-        combinedItems.length.should.be.equal(1)
-        combinedItems.should.deep.equal([
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: 'g', quantity: 50}]
-            }
-        ])
-
-        combinedItems = removeItems(items2, items1)
-        combinedItems.length.should.be.equal(2)
-        combinedItems.should.deep.equal([
-            {
-                ingredientID: '123',
-                ingredientName: 'A',
-                quantities: [{unit: '', quantity: 2}]
-            },
-            {
-                ingredientID: '234',
-                ingredientName: 'B',
-                quantities: [{unit: 'cl', quantity: 20}]
-            }
-        ])
-
+        await handleListDependencies(user, 'REMOVE_RECIPES', [recipes[0]._id])
+        user.shoppingList.should.have.lengthOf(0)
     })
 })

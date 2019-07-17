@@ -172,7 +172,7 @@ describe('utils/users', function() {
 
         sinon.mock(User)
             .expects('findById')
-            .withArgs("5d1f7df9df5a80e5e1fd3eb6")
+            .withArgs(user._id)
             .resolves({
                 ...user,
                 savedRecipes: []

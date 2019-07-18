@@ -6,7 +6,7 @@ import 'sinon-mongoose'
 
 import Recipe from '../models/recipe'
 import User from '../models/user'
-import { getItemsFromShoppingList, getItemsFromFridge, handleListDependencies } from '../utils/user'
+import { removeCookedIngredients, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies } from '../utils/user'
 
 chai.should()
 
@@ -307,6 +307,78 @@ describe('utils/users - handleListDependencies', function() {
 })
 
 describe('utils/users - others', function() {
+    it('removeCookedIngredients()', async function() {
+        const user = {
+            _id: "5d1f7df9df5a80e5e1fd3eb6",
+            savedRecipes: [{
+                recipeID: "5d24c810fee493ef6c987d6f",
+                savingDate: 1563386356410
+            }],
+            shoppingList: [],
+            fridge: [{
+                ingredientID: "5d24c810fee493ef6c987d70",
+                ingredientName: "tortilla",
+                quantities: [{ unit: "", quantity: 1 }]
+            }, {
+                ingredientID: "5d24c811fee493ef6c987d71",
+                ingredientName: "abricot",
+                quantities: [{ unit: "", quantity: 6 }]
+            },{
+                ingredientID: "5d24c811fee493ef6c987d72",
+                ingredientName: "beurre",
+                quantities: [{ unit:"g", quantity: 5 }]
+            }, {
+                ingredientID: "5d24c811fee493ef6c987d73",
+                ingredientName: "sucre vanillé",
+                quantities: [{ unit:"sachet", quantity: 1 }]
+            }],
+            save: function() {}
+        }
+        const recipes = [
+            {
+                _id: "5d24c810fee493ef6c987d6f",
+                ingredients: [
+                    {
+                        "ingredientName":"tortilla",
+                        "unit":"",
+                        "quantity":1,
+                        "ingredientID":"5d24c810fee493ef6c987d70"
+                    },
+                    {
+                        "ingredientName":"abricot",
+                        "unit":"",
+                        "quantity":6,
+                        "ingredientID":"5d24c811fee493ef6c987d71"
+                    },
+                    {
+                        "ingredientName":"beurre",
+                        "unit":"g",
+                        "quantity":10,
+                        "ingredientID":"5d24c811fee493ef6c987d72"
+                    },
+                    {
+                        "ingredientName":"sucre vanillé",
+                        "unit":"sachet",
+                        "quantity":2,
+                        "ingredientID":"5d24c811fee493ef6c987d73"
+                    }
+                ]
+            }
+        ]
+
+        sinon.mock(Recipe)
+            .expects('find')
+            .withArgs({_id: { $in: recipes.map(r => r._id) }})
+            .chain('select')
+            .withArgs({'ingredients.ingredientID': 1, 'ingredients.ingredientName': 1,
+                'ingredients.quantity': 1, 'ingredients.unit': 1})
+            .chain('exec')
+            .resolves(recipes)
+
+        await removeCookedIngredients(user, recipes.map(r => r._id))
+        user.fridge.should.be.empty
+    })
+
     it('getItemsFromShoppingList()', function() {
         const user = {
             shoppingList: [{

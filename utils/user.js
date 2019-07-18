@@ -180,7 +180,7 @@ export const removeItemsFromFridge = async function(userID, items) {
  */
 export const removeCookedIngredients = async function(reqUser, recipeIDs) {
     const cookedIngredients = Object.values(await getIngredientsFromRecipes(recipeIDs))
-    reqUser.frdige = removeItems(reqUser.fridge, cookedIngredients)
+    reqUser.fridge = removeItems(reqUser.fridge, cookedIngredients)
     await reqUser.save()
     return true
 }

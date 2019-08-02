@@ -63,6 +63,7 @@ router.post('/recipes/by/keywords', function(req, res) {
                         budget: recipe.budget,
                         difficulty: recipe.difficulty,
                         totalTime: recipe.totalTime,
+                        ingredients: recipe.ingredients,
                         score: scoreCache[recipe._id]
                     }
                 }))

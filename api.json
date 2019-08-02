@@ -89,6 +89,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Recipes not found"
           }
         }
       }
@@ -119,7 +122,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {"$ref": "#/definitions/RecipeForList"}
+                  "items": {"$ref": "#/definitions/RecipeForListWithScore"}
                 }
               }
             }
@@ -1120,8 +1123,30 @@
         "title": {"type": "string"},
         "budget": {"type": "string"},
         "difficulty": {"type": "string"},
-        "totalTime": {"type": "number"}
+        "totalTime": {"type": "number"},
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type":  "object",
+            "properties": {
+              "ingredientID": {"type": "string"},
+              "quantity": {"type": "number"},
+              "unit": {"type": "string"}
+            }
+          }
+        }
       }
+    },
+    "RecipeForListWithScore": {
+      "allOf": [
+        {"$ref": "#/definitions/RecipeForList"},
+        {
+          "type": "object",
+          "properties": {
+            "score": {"type":  "number"}
+          }
+        }
+      ]
     }
   },
   "components": {

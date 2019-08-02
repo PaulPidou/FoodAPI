@@ -14,15 +14,17 @@ router.get('/profile/me', function(req, res) {
 })
 
 router.get('/lists', function(req, res) {
-    const user = JSON.parse(JSON.stringify(req.user))
+    const user = req.user.toJSON()
 
     delete user._id
     delete user.email
     delete user.isAdmin
+    delete user.parameters
 
     const recipeIDs = user.savedRecipes.map(item => item.recipeID)
     Recipe.find({_id: { $in: recipeIDs}}).select(
-        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+            'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
         if(err || !recipes) {
             user.savedRecipes = []
         }
@@ -34,7 +36,8 @@ router.get('/lists', function(req, res) {
 router.get('/savedrecipes', function(req, res) {
     const recipeIDs = req.user.savedRecipes.map(item => item.recipeID)
     Recipe.find({_id: { $in: recipeIDs}}).select(
-        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1}).exec(function(err, recipes) {
+        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+            'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
         if(err || !recipes) {
             res.status(404).json({message: "Recipes not found"})
             return
@@ -114,7 +117,7 @@ router.post('/shoppinglist/update/item/', async function(req, res) {
     }
     req.user.shoppingList = newShoppingList
     await req.user.save()
-    res.json({ message: 'Items updated' })
+    res.json({ message: 'Item updated' })
 })
 
 router.post('/shoppinglist/items/from/recipes', checkIfRecipesExist, async function(req, res) {

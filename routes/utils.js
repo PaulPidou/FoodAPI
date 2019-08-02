@@ -40,10 +40,18 @@ const convertObjectToList = function(quantities) {
 }
 
 const convertFlatItemToCombinedOne = function(item) {
-    return {
+    const combinedItem = {
         ingredientID: item.ingredientID,
         ingredientName: item.ingredientName,
         quantities: [{unit: item.unit, quantity: item.quantity}]
+    }
+    if(item.hasOwnProperty('expirationDate')) {
+        return {
+            ...combinedItem,
+            expirationDate: item.expirationDate
+        }
+    } else {
+        return combinedItem
     }
 }
 

@@ -452,6 +452,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Recipes not found"
           }
         }
       }
@@ -544,6 +547,49 @@
         }
       }
     },
+    "/user/savedrecipes/cook/recipes": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Remove cooked recipes and cooked ingredients from the saved recipes and fridge of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipe IDs to remove from the user saved recipes list",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipes removed"
+          },
+          "404": {
+            "description": "Recipes not found"
+          }
+        }
+      }
+    },
     "/user/shoppinglist": {
       "get": {
         "tags": ["Authenticated user"],
@@ -563,7 +609,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShoppingList"
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/ShoppingItem"}
                 }
               }
             }
@@ -613,6 +660,39 @@
           },
           "422": {
             "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/user/shoppinglist/update/item/": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Update an item of the shopping list of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Item to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ShoppingItem"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item updated"
           }
         }
       }
@@ -725,7 +805,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Fridge"
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/FridgeItem"}
                 }
               }
             }
@@ -760,7 +841,20 @@
                 "ingredients": {
                   "type": "array",
                   "description": "Array of ingredients",
-                  "items": {"$ref": "#/definitions/FridgeItem"}
+                  "items": {
+                    "allOf": [
+                      {"$ref": "#/definitions/Item"},
+                      {
+                        "type": "object",
+                        "properties": {
+                          "expirationDate": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    ]
+                  }
                 }
               }
             }
@@ -1002,33 +1096,16 @@
     }
   },
   "definitions": {
-    "User": {
-      "type": "object",
-      "properties": {
-        "email": {"type": "string"},
-        "password": {"type": "string"}
-      },
-      "required": [
-        "email",
-        "password"
-      ]
-    },
-    "UserLists": {
-      "type": "object",
-      "properties": {
-        "savedRecipes": {
-          "type": "array",
-          "items": {"$ref": "#/definitions/RecipeForList"}
-        },
-        "shoppingList": {
-          "type": "array",
-          "items": {"$ref": "#/definitions/Item"}
-        },
-        "fridge": {
-          "type": "array",
-          "items": {"$ref": "#/definitions/FridgeItem"}
+    "FridgeItem": {
+      "allOf": [
+        {"$ref": "#/definitions/ShoppingItem"},
+        {
+          "type": "object",
+          "properties": {
+            "expirationDate": {"type": "string", "format": "date-time"}
+          }
         }
-      }
+      ]
     },
     "Item": {
       "type": "object",
@@ -1040,6 +1117,14 @@
       "required": [
         "ingredientID"
       ]
+
+    },
+    "ItemQuantity": {
+      "type": "object",
+      "properties": {
+        "quantity": {"type": "number", "minimum": 0},
+        "unit": {"type": "string"}
+      }
     },
     "Ingredients": {
       "type": "object",
@@ -1048,17 +1133,12 @@
         "name": {"type": "string"}
       }
     },
-    "FridgeItem": {
+    "Parameters": {
       "type": "object",
       "properties": {
-        "ingredientID": {"type": "string"},
-        "quantity": {"type": "number", "minimum": 0},
-        "unit": {"type": "string"},
-        "expirationDate": {"type": "string", "format": "date-time"}
-      },
-      "required": [
-        "ingredientID"
-      ]
+        "keepFoodListsIndependent": {"type":  "boolean"},
+        "transferCheckedShoppingListItemsToFridge": {"type":  "boolean"}
+      }
     },
     "Recipe": {
       "type": "object",
@@ -1153,6 +1233,55 @@
           }
         }
       ]
+    },
+    "ShoppingItem": {
+      "type": "object",
+      "properties": {
+        "ingredientID": {"type": "string"},
+        "ingredientName": {"type": "string"},
+        "quantities": {
+          "type": "array",
+          "items": {"$ref":  "#/definitions/ItemQuantity"}
+        }
+      },
+      "required": [
+        "ingredientID",
+        "ingredientName"
+      ]
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ]
+    },
+    "UserLists": {
+      "type": "object",
+      "properties": {
+        "savedRecipes": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/RecipeForList"}
+        },
+        "shoppingList": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/ShoppingItem"}
+        },
+        "fridge": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/FridgeItem"}
+        }
+      }
     }
   },
   "components": {
@@ -1164,18 +1293,6 @@
       }
     },
     "schemas": {
-      "Fridge": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "items": {
-            "type": "array",
-            "items": {"$ref": "#/components/schemas/Item"}
-          }
-        }
-      },
       "Ingredient": {
         "type": "object",
         "properties": {
@@ -1199,95 +1316,19 @@
           "name"
         ]
       },
-      "Item": {
-        "type": "object",
-        "properties": {
-          "_id": {"type": "string"},
-          "ingredientID": {"type": "string"},
-          "ingredientName": {"type": "string"},
-          "quantity": {"type": "number"},
-          "unit": {"type": "string"}
-        }
-      },
       "Recipe": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "title": {"type": "string"},
-          "author": {"type": "string"},
-          "budget": {"type": "string"},
-          "difficulty": {"type": "string"},
-          "recipeQuantity": {
+        "allOf": [
+          {
             "type": "object",
             "properties": {
-              "unit": {"type": "string"},
-              "value": {"type": "number"}
+              "_id": {"type":  "string"}
             }
           },
-          "fame": {"type": "number"},
-          "picture": {"type": "string"},
-          "ingredients": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "display": {"type": "string"},
-                "ingredient": {"type": "string"},
-                "quantity": {"type": "number"},
-                "unit": {"type": "string"},
-                "complement": {"type": "string"},
-                "picture": {"type": "string"}
-              }
-            }
-          },
-          "utensils": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "utensil": {"type": "string"},
-                "picture": {"type": "string"}
-              }
-            }
-          },
-          "recipe": {
-            "type": "array",
-            "items": {"type": "string"}
-          },
-          "tags": {
-            "type": "array",
-            "items": {"type": "string"}
-          },
-          "totalTime": {"type": "number"},
-          "timingDetails": {
-            "type": "object",
-            "properties": {
-              "preparation": {"type": "number"},
-              "cooking": {"type": "number"},
-              "rest": {"type": "number"}
-            }
-          }
-        },
+          {"$ref": "#/definitions/Recipe"}
+        ],
         "required": [
-          "_id",
-          "title"
+          "_id"
         ]
-      },
-      "ShoppingList": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Item"
-            }
-          }
-        }
       },
       "User": {
         "type": "object",
@@ -1296,7 +1337,33 @@
             "type": "string"
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
+          },
+          "isAdmin": {"type":  "boolean"},
+          "savedRecipes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "recipeID": {"type":  "string"},
+                "savingDate": {
+                  "type":  "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "shoppingList": {
+            "type": "array",
+            "items": {"$ref":  "#/definitions/ShoppingItem"}
+          },
+          "fridge": {
+            "type": "array",
+            "items": {"$ref":  "#/definitions/FridgeItem"}
+          },
+          "parameters": {
+            "$ref": "#/definitions/Parameters"
           }
         }
       }

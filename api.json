@@ -159,7 +159,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {"$ref": "#/definitions/RecipeForList"}
+                  "items": {"$ref": "#/definitions/RecipeForListWithScore"}
                 }
               }
             }
@@ -182,6 +182,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Ingredients not found"
           }
         }
       }
@@ -240,6 +243,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Ingredient not found"
           }
         }
       }
@@ -333,8 +339,8 @@
               }
             }
           },
-          "404": {
-            "description": "User not found"
+          "400": {
+            "description": "Bad email or password"
           }
         }
       }
@@ -1179,7 +1185,11 @@
           "name": {
             "type": "string"
           },
-          "recipe": {
+          "units": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "recipes": {
             "type": "array",
             "items": {"type": "string"}
           }

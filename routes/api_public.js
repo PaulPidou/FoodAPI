@@ -123,7 +123,7 @@ router.post('/register', function(req, res) {
             res.status(403).json({message: 'User already exists'})
             return
         }
-        res.json({'message': 'Registration succeeded'})
+        res.json({message: 'Registration succeeded'})
     })
 })
 
@@ -141,7 +141,7 @@ router.post('/login', function(req, res, next) {
                 return
             }
             const token = jwt.sign({email: user.email}, config.secret)
-            res.json({token})
+            res.json({token: token})
         })
     })(req, res, next)
 })

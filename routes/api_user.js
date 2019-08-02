@@ -177,7 +177,7 @@ router.post('/fridge/update/item/', async function(req, res) {
     }
     req.user.fridge = newFridge
     await req.user.save()
-    res.json({ message: 'Items updated' })
+    res.json({ message: 'Item updated' })
 })
 
 router.post('/fridge/delete/items', async function(req, res) {

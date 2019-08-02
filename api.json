@@ -873,6 +873,39 @@
         }
       }
     },
+    "/user/fridge/update/item/": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Update an item of the fridge of the connected user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Item to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FridgeItem"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item updated"
+          }
+        }
+      }
+    },
     "/user/fridge/delete/items": {
       "post": {
         "tags": ["Authenticated user"],
@@ -1061,18 +1094,25 @@
         }
       }
     },
-    "/admin/recipe/{recipeID}": {
+    "/admin/recipes": {
       "delete": {
         "tags": ["Admin"],
-        "summary": "Remove the recipe from the database",
+        "summary": "Remove recipes from the database",
         "parameters": [
           {
-            "in": "path",
-            "name": "recipeID",
-            "description": "Identifier of the recipe",
+            "in": "body",
+            "name": "body",
+            "description": "IDs of the recipes to remove from the DB",
             "required": true,
-            "schema": {"type": "string"}
-
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
           }
         ],
         "security": [
@@ -1086,10 +1126,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Recipe removed"
+            "description": "Recipes removed"
           },
           "404": {
-            "description": "Recipe not found"
+            "description": "Recipes not found"
           }
         }
       }

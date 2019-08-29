@@ -77,13 +77,29 @@ router.post('/recipes/by/ingredients', async function(req, res) {
 })
 
 router.get('/ingredients', function(req, res) {
-    Ingredient.find({}).select({'name': 1}).sort('name').exec(function(err, ingredients) {
+    Ingredient.aggregate([{
+            $project : {
+                name : 1,
+                picture: 1,
+                fame: { $size: '$recipes' }
+            }
+        }, { $sort: { name: 1 } }]).exec(function(err, ingredients) {
+            if(err || !ingredients) {
+                res.status(404).json({message: "Ingredients not found"})
+                return
+            }
+            res.json(ingredients)
+        })
+
+    /*
+    Ingredient.find({}).select({'name': 1, 'picture': 1}).sort('name').exec(function(err, ingredients) {
         if(err || !ingredients) {
             res.status(404).json({message: "Ingredients not found"})
             return
         }
         res.json(ingredients)
     })
+    */
 })
 
 router.get('/ingredient/:ingredientID', function(req, res) {

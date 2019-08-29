@@ -105,6 +105,7 @@ RecipeSchema.pre('validate', async function(next) {
         } else {
             recipeIngredient_cpy.ingredientID = await new Ingredient({
                 name: recipeIngredient.ingredientName,
+                picture: recipeIngredient.picture,
                 units: [recipeIngredient.unit.toLowerCase()]
             }).save()
         }

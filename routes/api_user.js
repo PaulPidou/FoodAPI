@@ -158,7 +158,11 @@ router.post('/fridge/items', checkIfIngredientsExist, async function(req, res) {
         }
         items.push(itemToSave)
     }
-    await addItemsToFridge(req.user, items)
+    if(req.user.parameters.keepFoodListsIndependent) {
+        await addItemsToFridge(req.user, items)
+    } else {
+        await handleListDependencies(req.user, 'ADD_ITEMS_TO_FRIDGE', items)
+    }
     res.json({ message: 'Items saved' })
 })
 
@@ -181,7 +185,9 @@ router.post('/fridge/update/item/', async function(req, res) {
 })
 
 router.post('/fridge/delete/items', async function(req, res) {
-    const bool = await removeItemsFromFridge(req.user._id, req.body.items)
+    const bool = req.user.parameters.keepFoodListsIndependent ?
+        await removeItemsFromFridge(req.user._id, req.body.items) :
+        await handleListDependencies(req.user, 'REMOVE_ITEMS_FROM_FRIDGE', req.body.items)
     bool ? res.json({message: "Items removed"}) : res.status(404).json({message: "Items not found"})
 })
 

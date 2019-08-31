@@ -126,7 +126,7 @@ export const removeRecipes = async function(userID, recipes) {
  */
 export const addItemsToShoppingList = async function(reqUser, items) {
     const newItems = Object.values(unflatIngredients(items))
-    reqUser.shoppingList = addNewItems(reqUser.shoppingList, newItems)
+    reqUser.shoppingList = addNewItems(reqUser.shoppingList.toObject(), newItems)
     await reqUser.save()
     return true
 }

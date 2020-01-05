@@ -93,7 +93,7 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
 
         scores[recipeID].listCoverage = scores[recipeID].count / ingredientIDs.length
         const recipe = await Recipe.findById(recipeID).select(
-            {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
+            {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
         if (recipe) {
             scores[recipeID].recipeCoverage = scores[recipeID].count / recipe.ingredients.length
             recipesCache[recipeID] = recipe
@@ -108,6 +108,7 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
             _id: recipesCache[recipe[0]]._id,
             title: recipesCache[recipe[0]].title,
             budget: recipesCache[recipe[0]].budget,
+            picture: recipesCache[recipe[0]].picture,
             difficulty: recipesCache[recipe[0]].difficulty,
             totalTime: recipesCache[recipe[0]].totalTime,
             ingredients: recipesCache[recipe[0]].ingredients,

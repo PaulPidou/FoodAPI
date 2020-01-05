@@ -36,7 +36,7 @@ router.get('/lists', function(req, res) {
 router.get('/savedrecipes', function(req, res) {
     const recipeIDs = req.user.savedRecipes.map(item => item.recipeID)
     Recipe.find({_id: { $in: recipeIDs}}).select(
-        {"title": 1, "budget": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
             'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
         if(err || !recipes) {
             res.status(404).json({message: "Recipes not found"})

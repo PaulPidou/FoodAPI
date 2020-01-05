@@ -1248,6 +1248,7 @@
         "_id": {"type": "string"},
         "title": {"type": "string"},
         "budget": {"type": "string"},
+        "picture": {"type":  "string"},
         "difficulty": {"type": "string"},
         "totalTime": {"type": "number"},
         "ingredients": {

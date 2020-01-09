@@ -40,6 +40,9 @@ const convertObjectToList = function(quantities) {
 }
 
 const convertFlatItemToCombinedOne = function(item) {
+    if(item.hasOwnProperty('quantities')) {
+        return item
+    }
     const combinedItem = {
         ingredientID: item.ingredientID,
         ingredientName: item.ingredientName,
@@ -276,6 +279,7 @@ export const addNewItems = function(userItems, newItems) {
             combinedItems.push(newItem)
         }
     }
+
     return combinedItems
 }
 

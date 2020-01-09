@@ -153,7 +153,7 @@ export const removeItemsFromShoppingList = async function(userID, items) {
  */
 export const addItemsToFridge = async function(reqUser, items) {
     const newItems = Object.values(unflatIngredients(items))
-    reqUser.fridge = addNewItems(reqUser.fridge, newItems)
+    reqUser.fridge = addNewItems(reqUser.fridge.toObject(), newItems)
     await reqUser.save()
     return true
 }
@@ -192,7 +192,7 @@ export const removeCookedIngredients = async function(reqUser, recipeIDs) {
  * @returns {Array<Object>} - Items within the shopping list matching the given *items*
  */
 export const getItemsFromShoppingList = function(reqUser, items) {
-    return reqUser.shoppingList.filter(item => items.includes(item.ingredientID.toString()))
+    return JSON.parse(JSON.stringify(reqUser.shoppingList.filter(item => items.includes(item.ingredientID.toString()))))
 }
 
 /**
@@ -202,7 +202,7 @@ export const getItemsFromShoppingList = function(reqUser, items) {
  * @returns {Array<Object>} - Items within the fridge matching the given *items*
  */
 export const getItemsFromFridge = function(reqUser, items) {
-    return reqUser.fridge.filter(item => items.includes(item.ingredientID.toString()))
+    return JSON.parse(JSON.stringify(reqUser.fridge.filter(item => items.includes(item.ingredientID.toString()))))
 }
 
 /**

@@ -79,7 +79,7 @@ router.post('/savedrecipes/delete/recipes', async function(req, res) {
 router.post('/savedrecipes/cook/recipes', async function(req, res) {
     const msgBegin = req.body.recipes.length === 1 ? 'Recipe' : 'Recipes'
     const bool = await removeRecipes(req.user._id, req.body.recipes)
-    //await removeCookedIngredients(req.user, req.body.recipes)
+    await removeCookedIngredients(req.user, req.body.recipes)
     bool ? res.json({ message: `${msgBegin}  removed` }) : res.status(404).json({ message: `${msgBegin}  not found` })
 })
 

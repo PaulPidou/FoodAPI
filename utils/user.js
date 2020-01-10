@@ -39,7 +39,7 @@ const getIngredientsFromRecipes = async function(recipeIDs) {
  */
 const buildShoppingListObject = function(reqUser, items) {
     let shoppingList = {...items}
-    for(const fridgeItem of reqUser.fridge) {
+    for(const fridgeItem of reqUser.fridge.toObject()) {
         const fridgeItemID = fridgeItem.ingredientID.toString()
         if(items.hasOwnProperty(fridgeItemID)) {
             // Subtract item from fridge item and add remaining to diff is any
@@ -63,7 +63,7 @@ const buildShoppingListObject = function(reqUser, items) {
 const getDiffBetweenShoppingLists = function(reqUser, shoppingListObject) {
     let toKeep = []
     let toRemove = {}
-    for(const slItem of reqUser.shoppingList) {
+    for(const slItem of reqUser.shoppingList.toObject()) {
         const ingredientID = slItem.ingredientID.toString()
         if(shoppingListObject.hasOwnProperty(ingredientID)) {
             const diffQuantities = getDiffQuantities(slItem, shoppingListObject[ingredientID])
@@ -180,7 +180,7 @@ export const removeItemsFromFridge = async function(userID, items) {
  */
 export const removeCookedIngredients = async function(reqUser, recipeIDs) {
     const cookedIngredients = Object.values(await getIngredientsFromRecipes(recipeIDs))
-    reqUser.fridge = removeItems(reqUser.fridge, cookedIngredients)
+    reqUser.fridge = removeItems(reqUser.fridge.toObject(), cookedIngredients)
     await reqUser.save()
     return true
 }

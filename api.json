@@ -37,7 +37,6 @@
             "description": "Identifier of the recipe",
             "required": true,
             "schema": {"type": "string"}
-
           }
         ],
         "responses": {
@@ -92,6 +91,25 @@
           },
           "404": {
             "description": "Recipes not found"
+          }
+        }
+      }
+    },
+    "/public/recipes/by/fame": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get recipes by fame",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForListWithFame"}
+                }
+              }
+            }
           }
         }
       }
@@ -1271,6 +1289,17 @@
           "type": "object",
           "properties": {
             "score": {"type":  "number"}
+          }
+        }
+      ]
+    },
+    "RecipeForListWithFame": {
+      "allOf": [
+        {"$ref": "#/definitions/RecipeForList"},
+        {
+          "type": "object",
+          "properties": {
+            "fame": {"type":  "number"}
           }
         }
       ]

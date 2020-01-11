@@ -34,6 +34,19 @@ router.post('/recipes/summary', function(req, res) {
     })
 })
 
+router.get('/recipes/by/fame', function(req, res) {
+    Recipe.find({}).select(
+        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, 'fame': 1, "totalTime": 1,
+            'ingredients.ingredientID': 1, 'ingredients.quantity': 1, 'ingredients.unit': 1})
+        .sort({'fame': -1}).limit(100).exec(function(err, recipes) {
+            if(err || !recipes) {
+                res.status(404).json({message: "Recipes not found"})
+                return
+            }
+        res.json(recipes)
+    })
+})
+
 router.post('/recipes/by/keywords', function(req, res) {
     Recipe.search({ query_string: { query: req.body.keywords }}, function(err, results) {
         if(err || !results || results.hits.total === 0) {

@@ -55,6 +55,46 @@
         }
       }
     },
+    "/public/recipes/details": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Get recipes",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of recipes ID",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "recipes": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/components/schemas/Recipe"}
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipes not found"
+          }
+        }
+      }
+    },
     "/public/recipes/summary": {
       "post": {
         "tags": ["Public"],

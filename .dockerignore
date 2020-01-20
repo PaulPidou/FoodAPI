@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+Readme.md
+yarn.lock
+yarn-error.log
+.nyc_output
+.gitignore

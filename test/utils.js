@@ -23,8 +23,13 @@ describe('utils/users - handleListDependencies', function() {
         const user = {
             _id: "5d1f7df9df5a80e5e1fd3eb6",
             savedRecipes: [],
-            fridge: [],
-            shoppingList: [],
+            fridge: {
+                toObject: function() { return [] }
+            },
+            shoppingList: {
+                toObject: function() { return [] },
+                map: function() { return [] }
+            },
             save: function() {}
         }
         const recipes = [
@@ -94,28 +99,37 @@ describe('utils/users - handleListDependencies', function() {
                 recipeID: "5d24c810fee493ef6c987d6f",
                 savingDate: 1563386356410
             }],
-            fridge: [{
-                ingredientID: "5d24c811fee493ef6c987d72",
-                ingredientName: "beurre",
-                quantities: [{ unit:"g", quantity: 5 }]
-            }],
-            shoppingList: [{
-                ingredientID: "5d24c810fee493ef6c987d70",
-                ingredientName: "tortilla",
-                quantities: [{ unit: "", quantity: 1 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d71",
-                ingredientName: "abricot",
-                quantities: [{ unit: "", quantity: 6 }]
-            },{
-                ingredientID: "5d24c811fee493ef6c987d72",
-                ingredientName: "beurre",
-                quantities: [{ unit:"g", quantity: 5 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d73",
-                ingredientName: "sucre vanillé",
-                quantities: [{ unit:"sachet", quantity: 1 }]
-            }],
+            fridge: {
+                toObject: function() {
+                    return [{
+                        ingredientID: "5d24c811fee493ef6c987d72",
+                        ingredientName: "beurre",
+                        quantities: [{ unit:"g", quantity: 5 }]
+                    }]}
+            },
+            shoppingList: {
+                toObject: function() {
+                    return [{
+                        ingredientID: "5d24c810fee493ef6c987d70",
+                        ingredientName: "tortilla",
+                        quantities: [{ unit: "", quantity: 1 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d71",
+                        ingredientName: "abricot",
+                        quantities: [{ unit: "", quantity: 6 }]
+                    },{
+                        ingredientID: "5d24c811fee493ef6c987d72",
+                        ingredientName: "beurre",
+                        quantities: [{ unit:"g", quantity: 5 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d73",
+                        ingredientName: "sucre vanillé",
+                        quantities: [{ unit:"sachet", quantity: 1 }]
+                    }]},
+                map: function() {
+                    return ["5d24c810fee493ef6c987d70", "5d24c811fee493ef6c987d71",
+                        "5d24c811fee493ef6c987d72", "5d24c811fee493ef6c987d73",]}
+            },
             save: function() {}
         }
         const recipes = [
@@ -217,24 +231,33 @@ describe('utils/users - handleListDependencies', function() {
                 recipeID: "5d24c810fee493ef6c987d6f",
                 savingDate: 1563386356410
             }],
-            fridge: [],
-            shoppingList: [{
-                ingredientID: "5d24c810fee493ef6c987d70",
-                ingredientName: "tortilla",
-                quantities: [{ unit: "", quantity: 1 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d71",
-                ingredientName: "abricot",
-                quantities: [{ unit: "", quantity: 6 }]
-            },{
-                ingredientID: "5d24c811fee493ef6c987d72",
-                ingredientName: "beurre",
-                quantities: [{ unit:"g", quantity: 10 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d73",
-                ingredientName: "sucre vanillé",
-                quantities: [{ unit:"sachet", quantity: 2 }]
-            }],
+            fridge: {
+                toObject: function() { return [] }
+            },
+            shoppingList: {
+                toObject: function() {
+                    return [{
+                        ingredientID: "5d24c810fee493ef6c987d70",
+                        ingredientName: "tortilla",
+                        quantities: [{ unit: "", quantity: 1 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d71",
+                        ingredientName: "abricot",
+                        quantities: [{ unit: "", quantity: 6 }]
+                    },{
+                        ingredientID: "5d24c811fee493ef6c987d72",
+                        ingredientName: "beurre",
+                        quantities: [{ unit:"g", quantity: 10 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d73",
+                        ingredientName: "sucre vanillé",
+                        quantities: [{ unit:"sachet", quantity: 2 }]
+                    }]},
+                map: function() {
+                    return ["5d24c810fee493ef6c987d70", "5d24c811fee493ef6c987d71",
+                        "5d24c811fee493ef6c987d72", "5d24c811fee493ef6c987d73"]
+                }
+            },
             save: function() {}
         }
         const recipes = [
@@ -315,23 +338,26 @@ describe('utils/users - others', function() {
                 savingDate: 1563386356410
             }],
             shoppingList: [],
-            fridge: [{
-                ingredientID: "5d24c810fee493ef6c987d70",
-                ingredientName: "tortilla",
-                quantities: [{ unit: "", quantity: 1 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d71",
-                ingredientName: "abricot",
-                quantities: [{ unit: "", quantity: 6 }]
-            },{
-                ingredientID: "5d24c811fee493ef6c987d72",
-                ingredientName: "beurre",
-                quantities: [{ unit:"g", quantity: 5 }]
-            }, {
-                ingredientID: "5d24c811fee493ef6c987d73",
-                ingredientName: "sucre vanillé",
-                quantities: [{ unit:"sachet", quantity: 1 }]
-            }],
+            fridge: {
+                toObject: function() {
+                    return [{
+                        ingredientID: "5d24c810fee493ef6c987d70",
+                        ingredientName: "tortilla",
+                        quantities: [{ unit: "", quantity: 1 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d71",
+                        ingredientName: "abricot",
+                        quantities: [{ unit: "", quantity: 6 }]
+                    },{
+                        ingredientID: "5d24c811fee493ef6c987d72",
+                        ingredientName: "beurre",
+                        quantities: [{ unit:"g", quantity: 5 }]
+                    }, {
+                        ingredientID: "5d24c811fee493ef6c987d73",
+                        ingredientName: "sucre vanillé",
+                        quantities: [{ unit:"sachet", quantity: 1 }]
+                    }]}
+            },
             save: function() {}
         }
         const recipes = [

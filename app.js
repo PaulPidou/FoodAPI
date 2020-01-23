@@ -13,10 +13,10 @@ import api_admin from './routes/api_admin'
 
 
 // mongoose
-const mongodb = process.env.MONGO_URL || 'mongodb://127.0.0.1/food_db'
+const mongodb = process.env.MONGO_URL || 'mongodb://127.0.0.1:27017'
 mongoose.set('useCreateIndex', true)
 mongoose.set('useFindAndModify', false)
-mongoose.connect(mongodb, {useNewUrlParser: true})
+mongoose.connect(mongodb.concat('/food_db'), {useNewUrlParser: true})
 
 const app = express()
 

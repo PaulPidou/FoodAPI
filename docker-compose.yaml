@@ -9,7 +9,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_URL=mongodb://mongo:47017
+      - MONGO_URL=mongodb://mongo:27017/
   mongo:
     image: mongo
     restart: always

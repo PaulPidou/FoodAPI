@@ -8,8 +8,10 @@ services:
       - 3000:3000
     depends_on:
       - mongo
+      - elasticsearch
     environment:
       - MONGO_URL=mongodb://mongo:27017
+      - ELASTIC_HOST=elasticsearch
   mongo:
     image: mongo
     restart: always
@@ -24,6 +26,23 @@ services:
       - 8081:8081
     environment:
       - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+    restart: always
+    volumes:
+      - es_data:/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.5.4
+    restart: always
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
 
 volumes:
   mongodb:
+  es_data:

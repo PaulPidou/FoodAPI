@@ -147,7 +147,7 @@ RecipeSchema.methods.toJSON = function() {
     return obj
 }
 
-RecipeSchema.plugin(mongoosastic)
+RecipeSchema.plugin(mongoosastic, { host: process.env.ELASTIC_HOST || '127.0.0.1' })
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
 export default Recipe

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import Ingredient from "../models/ingredients"
 import Recipe from "../models/recipe"
 
@@ -7,20 +8,6 @@ const sortObject = function(obj) {
         sortable.push([key, obj[key]])
     }
     return sortable.sort(function(a, b) { return b[1] - a[1] })
-}
-
-const sortAndLimit = function(obj, filterKey, limit) {
-    const objToSort = {}
-    for (const key in obj) {
-        objToSort[key] = obj[key][filterKey]
-    }
-    const sortArray = sortObject(objToSort).slice(limit - 1)
-
-    let objToReturn = {}
-    for (const item of sortArray) {
-        objToReturn[item[0]] = obj[item[0]]
-    }
-    return objToReturn
 }
 
 const convertListToObject = function(quantities) {
@@ -67,42 +54,38 @@ const getObject = function(obj) {
 }
 
 // Public
-export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=100) {
+export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=50) {
+    const recipesID = await Ingredient.aggregate([
+        { $match : { _id: { $in: ingredientIDs.map(id => mongoose.mongo.ObjectId(id)) }}},
+        { $project : { recipes: 1 }},
+        { $unwind: { path: "$recipes", preserveNullAndEmptyArrays: true }},
+        { $group: { _id: "$recipes", count: { $sum: 1 }}},
+        { $sort: { count: -1 }}
+        ]).limit(maxRecipes).exec()
+
     let scores = {}
-    for (const id of ingredientIDs) {
-        const ingredient = await Ingredient.findById(id).exec()
-        if(ingredient) {
-            for (const recipe of ingredient.recipes) {
-                if (!scores.hasOwnProperty(recipe)) {
-                    scores[recipe] = {
-                        count: 0,
-                        recipeCoverage: 0,
-                        listCoverage: 0
-                    }
-                }
-                scores[recipe].count++
-            }
+    for (const recipe of recipesID) {
+        scores[recipe._id] = {
+            count: recipe.count,
+            recipeCoverage: 0,
+            listCoverage: 0
         }
     }
 
-    if (Object.keys(scores).length > maxRecipes) {
-        scores = sortAndLimit(scores, 'count', maxRecipes)
-    }
+    const recipesDetails = await Recipe.find({_id: { $in: Object.keys(scores) }}).select(
+        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
 
     let recipes = {}
     let recipesCache = {}
-    for (const recipeID in scores) {
-        if(!scores.hasOwnProperty(recipeID)) { continue }
+    for (const recipeDetails of recipesDetails) {
+        if(!scores.hasOwnProperty(recipeDetails._id)) { continue }
 
-        scores[recipeID].listCoverage = scores[recipeID].count / ingredientIDs.length
-        const recipe = await Recipe.findById(recipeID).select(
-            {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
-        if (recipe) {
-            scores[recipeID].recipeCoverage = scores[recipeID].count / recipe.ingredients.length
-            recipesCache[recipeID] = recipe
-        }
+        scores[recipeDetails._id].listCoverage = scores[recipeDetails._id].count / ingredientIDs.length
+        scores[recipeDetails._id].recipeCoverage = scores[recipeDetails._id].count / recipeDetails.ingredients.length
+        recipesCache[recipeDetails._id] = recipeDetails
+
         // Better to have a recipe we can do right away than a recipe with missing ingredients
-        recipes[recipeID] = 0.2 * scores[recipeID].listCoverage + 0.8 * scores[recipeID].recipeCoverage
+        recipes[recipeDetails._id] = 0.2 * scores[recipeDetails._id].listCoverage + 0.8 * scores[recipeDetails._id].recipeCoverage
     }
 
     let results = []

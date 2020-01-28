@@ -146,6 +146,10 @@ export const combineQuantities = function(currentItem1, currentItem2, operation)
                 combinedItem.quantities[unit] = item2.quantities[unit]
             }
         }
+    } else { // SUBTRACT or GET_REMAINING
+        if(item2.quantities.hasOwnProperty('INFINITY')) {
+            combinedItem.quantities = {}
+        }
     }
 
     combinedItem.quantities = convertObjectToList(combinedItem.quantities)

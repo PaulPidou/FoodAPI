@@ -34,7 +34,7 @@ describe('routes/utils', function() {
 
     })
 
-    it('combineQuantities()', function() {
+    it('combineQuantities() - General', function() {
         const items = [
             {
                 ingredientID: '123',
@@ -74,6 +74,25 @@ describe('routes/utils', function() {
         combinedItem = combineQuantities(items[2], items[0], 'SUBTRACT')
         combinedItem.quantities.should.be.a('array')
         combinedItem.quantities.should.deep.equal([{unit: '', quantity: 2}])
+    })
+
+    it('combineQuantities() - INFINITY', function() {
+        const items = [
+            {
+                ingredientID: '123',
+                ingredientName: 'A',
+                quantities: [{unit: 'g', quantity: 100}]
+            },
+            {
+                ingredientID: '123',
+                ingredientName: 'A',
+                quantities: [{unit: 'INFINITY', quantity: 0}]
+            }
+        ]
+
+        let combinedItem = combineQuantities(items[0], items[1], 'SUBTRACT')
+        combinedItem.quantities.should.be.a('array')
+        combinedItem.quantities.should.be.empty
     })
 
     it('getDiffQuantities()', function() {

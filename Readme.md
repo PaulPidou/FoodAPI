@@ -1,4 +1,4 @@
-# Food API ![Node.js Unit tests](https://github.com/PaulPidou/FoodAPI/workflows/Node%20CI/badge.svg)
+# Food API ![Node CI](https://github.com/PaulPidou/FoodAPI/workflows/Node%20CI/badge.svg)
 
 Backend of the react-native app [FoodApp](https://github.com/PaulPidou/FoodApp).
 

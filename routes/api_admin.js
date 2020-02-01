@@ -1,8 +1,9 @@
 import express from "express"
 import User from '../models/user'
 import Recipe from '../models/recipe'
+import Ingredient from "../models/ingredients"
 
-import {checkIfRecipesExist} from '../middlewares/checkExistence'
+import { checkIfRecipesExist, checkIfIngredientsAndSubstitutesExist } from '../middlewares/checkExistence'
 
 const router = express.Router()
 
@@ -47,8 +48,17 @@ router.delete('/recipes', checkIfRecipesExist, function(req, res) {
             res.status(403).json({message: err.message})
             return
         }
-        res.json({message: "Recipes removed"})
+        res.json({ message: "Recipes removed" })
     })
+})
+
+router.post('/ingredients/add/substitutes', checkIfIngredientsAndSubstitutesExist, async function(req, res) {
+    for(const ingredient of res.locals.ingredients) {
+        await Ingredient.updateOne({ _id: ingredient.ingredientID }, {
+            substitutes: ingredient.substitutes
+        }).exec()
+    }
+    res.json({ message: "Ingredients updated" })
 })
 
 export default router

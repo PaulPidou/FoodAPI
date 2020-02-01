@@ -1191,6 +1191,44 @@
           }
         }
       }
+    },
+    "admin/ingredients/update/substitutes": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Update substitutes of given ingredients",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Ingredients to update along with their substitutes",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredients": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/IngredientWithSubstitutes" }
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingredients updated"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1215,7 +1253,6 @@
       "required": [
         "ingredientID"
       ]
-
     },
     "ItemQuantity": {
       "type": "object",
@@ -1392,6 +1429,26 @@
           "items": {"$ref": "#/definitions/FridgeItem"}
         }
       }
+    },
+    "IngredientWithSubstitutes": {
+      "type": "object",
+      "properties": {
+        "ingredientID": {"type": "string"},
+        "substitutes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ingredientID": {"type": "string"},
+              "similarityScore": {"type": "number"}
+            }
+          }
+        }
+      },
+      "required": [
+        "ingredientID",
+        "substitutes"
+      ]
     }
   },
   "components": {
@@ -1419,6 +1476,17 @@
           "recipes": {
             "type": "array",
             "items": {"type": "string"}
+          },
+          "substitutes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredientID": {"type": "string"},
+                "ingredientName": {"type": "string"},
+                "similarityScore": {"type": "number"}
+              }
+            }
           }
         },
         "required": [

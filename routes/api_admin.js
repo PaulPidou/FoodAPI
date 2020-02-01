@@ -52,7 +52,7 @@ router.delete('/recipes', checkIfRecipesExist, function(req, res) {
     })
 })
 
-router.post('/ingredients/add/substitutes', checkIfIngredientsAndSubstitutesExist, async function(req, res) {
+router.post('/ingredients/update/substitutes', checkIfIngredientsAndSubstitutesExist, async function(req, res) {
     for(const ingredient of res.locals.ingredients) {
         await Ingredient.updateOne({ _id: ingredient.ingredientID }, {
             substitutes: ingredient.substitutes

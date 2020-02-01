@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const SubstituteSchema = new mongoose.Schema({
     ingredientID: {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     ingredientName: {

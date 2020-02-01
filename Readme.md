@@ -26,3 +26,28 @@ There are several endpoints to communicate with the backend. Those endpoints are
 - Admin: To perform admin actions
 
 To have a complete view of the available endpoints, run the stack and head to the [Swagger UI](https://swagger.io/tools/swagger-ui/) (SERVER_IP:3000/swagger/)
+
+## Algorithms details
+
+### Find recipes based on ingredients
+It can happen that one want to find suggestions of recipes based on the set of available ingredients.
+The algorithm implemented within this backend to solve this issue is the following:
+
+1. We retrieve, for each of the **N** available ingredients, the recipes in which they appear
+2. We count the number of times each recipe is retrieved (it can only be retrieved a maximum of **N** times)
+3. We compute the *listCoverage* for each recipe which corresponds to the count computed at the previous step divided by **N**
+4. We compute the *recipeCoverage* for each recipe which corresponds to the count computed at step 2 divided by the number of ingredients within the recipe
+5. Finally the compute a score for each recipe which is equal to: *a x listCoverage + (1 - a) x recipeCoverage* 
+with *a* a coefficient between 0 and 1
+
+Note that the score for each recipe will be between 0 and 1 and that, thanks to the coefficient *a*, it is possible to indicate 
+if we would prefer have either recipes that we can cook right away or recipes which cover more ingredients from the available set 
+(and which thus contain possibly more ingredients that those within the set of available ones).
+
+
+
+### Find ingredients substitutes
+It can happen that when one want to cook a recipe that there is no all the needed ingredients readily available. 
+In this case, it will be suitable to be able to find substitutes to those particular ingredients.
+To tackle this issue, it is possible to implement algorithms to automatically find replacements to missing ingredients.
+If you are interested by this subject and by how it was implemented for this backend you can check this [notebook on Kaggle](https://www.kaggle.com/paulpidou/ingredient-vectors-from-pmi-matrix).

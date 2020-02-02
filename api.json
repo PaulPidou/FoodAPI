@@ -44,7 +44,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Recipe"
+                  "$ref": "#/definitions/RecipeWithSubstitutes"
                 }
               }
             }
@@ -1336,6 +1336,83 @@
       "required": [
         "title"
       ]
+    },
+    "RecipeWithSubstitutes": {
+      "type": "object",
+      "properties": {
+        "_id": {"type":  "string"},
+        "title": {"type": "string"},
+        "author": {"type": "string"},
+        "budget": {"type": "string"},
+        "difficulty": {"type": "string"},
+        "recipeQuantity": {
+          "type": "object",
+          "properties": {
+            "unit": {"type": "string"},
+            "value": {"type": "number"}
+          }
+        },
+        "fame": {"type": "number"},
+        "picture": {"type": "string"},
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "display": {"type": "string"},
+              "ingredient": {"type": "string"},
+              "quantity": {"type": "number"},
+              "unit": {"type": "string"},
+              "complement": {"type": "string"},
+              "picture": {"type": "string"},
+              "substitutes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ingredientID": {
+                      "type": "string"
+                    },
+                    "ingredientName": {
+                      "type": "string"
+                    },
+                    "similarityScore": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "utensils": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "utensil": {"type": "string"},
+              "picture": {"type": "string"}
+            }
+          }
+        },
+        "recipe": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "totalTime": {"type": "number"},
+        "timingDetails": {
+          "type": "object",
+          "properties": {
+            "preparation": {"type": "number"},
+            "cooking": {"type": "number"},
+            "rest": {"type": "number"}
+          }
+        }
+      }
     },
     "RecipeForList": {
       "type": "object",

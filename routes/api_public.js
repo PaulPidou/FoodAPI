@@ -1,6 +1,7 @@
 import express from 'express'
 import passport from 'passport'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 import User from '../models/user'
 import Recipe from '../models/recipe'
@@ -13,12 +14,31 @@ import config from '../config'
 const router = express.Router()
 
 router.get('/recipe/:recipeID', function(req, res) {
-    Recipe.findById(req.params.recipeID).exec(function(err, recipe) {
-        if(err || !recipe) {
+    Recipe.aggregate([
+        { $match : { _id: mongoose.mongo.ObjectId(req.params.recipeID) }},
+        { $unwind: { path: "$ingredients" }},
+        { $lookup: {
+            from: 'ingredients',
+            localField: 'ingredients.ingredientID',
+            foreignField: '_id',
+            as: 'temp'
+        }},
+        { $unwind: { path: "$temp" }},
+        { $addFields: { "ingredients.substitutes": "$temp.substitutes" }},
+        { $group: {
+            _id: "$_id",
+            recipe: { "$first": "$$ROOT" },
+            ingredients: { $push: "$ingredients" }
+        }},
+        { $project: { "recipe.ingredients": 0, "recipe.temp": 0 }},
+        { $addFields: { "recipe.ingredients": "$ingredients" }},
+        { $replaceRoot: { newRoot: "$recipe" }}
+    ]).limit(1).exec(function(err, recipes) {
+        if(err || !recipes) {
             res.status(404).json({message: "Recipe not found"})
             return
         }
-        res.json(recipe)
+        res.json(recipes[0])
     })
 })
 

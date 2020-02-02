@@ -43,7 +43,26 @@ router.get('/recipe/:recipeID', function(req, res) {
 })
 
 router.post('/recipes/details', function(req, res) {
-    Recipe.find({_id: { $in: req.body.recipes}}).exec(function(err, recipes) {
+    Recipe.aggregate([
+        { $match : { _id: { $in: req.body.recipes.map(id => mongoose.mongo.ObjectId(id)) }}},
+        { $unwind: { path: "$ingredients" }},
+        { $lookup: {
+                from: 'ingredients',
+                localField: 'ingredients.ingredientID',
+                foreignField: '_id',
+                as: 'temp'
+            }},
+        { $unwind: { path: "$temp" }},
+        { $addFields: { "ingredients.substitutes": "$temp.substitutes" }},
+        { $group: {
+                _id: "$_id",
+                recipe: { "$first": "$$ROOT" },
+                ingredients: { $push: "$ingredients" }
+            }},
+        { $project: { "recipe.ingredients": 0, "recipe.temp": 0 }},
+        { $addFields: { "recipe.ingredients": "$ingredients" }},
+        { $replaceRoot: { newRoot: "$recipe" }}
+    ]).exec(function(err, recipes) {
         if(err || !recipes) {
             res.status(404).json({message: "Recipes not found"})
             return

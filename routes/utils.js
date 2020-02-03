@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
+import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
-import Recipe from "../models/recipe"
 
 const sortObject = function(obj) {
     let sortable = []
@@ -54,6 +54,29 @@ const getObject = function(obj) {
 }
 
 // Public
+export const getRecipesWithSubstitutes = async function(recipeIDs) {
+    return await Recipe.aggregate([
+        { $match : { _id: { $in: recipeIDs.map(id => mongoose.mongo.ObjectId(id)) }}},
+        { $unwind: { path: "$ingredients" }},
+        { $lookup: {
+                from: 'ingredients',
+                localField: 'ingredients.ingredientID',
+                foreignField: '_id',
+                as: 'temp'
+            }},
+        { $unwind: { path: "$temp" }},
+        { $addFields: { "ingredients.substitutes": "$temp.substitutes" }},
+        { $group: {
+                _id: "$_id",
+                recipe: { "$first": "$$ROOT" },
+                ingredients: { $push: "$ingredients" }
+            }},
+        { $project: { "recipe.ingredients": 0, "recipe.temp": 0 }},
+        { $addFields: { "recipe.ingredients": "$ingredients" }},
+        { $replaceRoot: { newRoot: "$recipe" }}
+    ]).exec()
+}
+
 export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=50) {
     const recipesID = await Ingredient.aggregate([
         { $match : { _id: { $in: ingredientIDs.map(id => mongoose.mongo.ObjectId(id)) }}},

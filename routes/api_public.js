@@ -1,7 +1,6 @@
 import express from 'express'
 import passport from 'passport'
 import jwt from 'jsonwebtoken'
-import mongoose from 'mongoose'
 
 import User from '../models/user'
 import Recipe from '../models/recipe'

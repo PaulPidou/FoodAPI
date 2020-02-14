@@ -428,11 +428,30 @@
             }
           }
         }
-      },
+      }
+    },
+    "/user/parameters": {
       "post": {
         "tags": ["Authenticated user"],
-        "summary": "Update the profile of the authenticated user",
+        "summary": "Update parameters of the connected user",
         "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Parameters to update",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "parameters": {
+                  "$ref": "#/definitions/Parameters"
+                }
+              }
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": {
@@ -442,19 +461,12 @@
             }
           }
         ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Update the user information",
-            "required": true,
-            "schema": {"$ref": "#/definitions/User"}
-
-          }
-        ],
         "responses": {
           "200": {
-            "description": "Profile update"
+            "description": "Parameters saved"
+          },
+          "400": {
+            "description": "Bad request"
           }
         }
       }

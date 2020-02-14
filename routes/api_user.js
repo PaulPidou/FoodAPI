@@ -13,6 +13,25 @@ router.get('/profile/me', function(req, res) {
     res.json(req.user)
 })
 
+router.post('/parameters', async function(req, res) {
+    const parameters = req.body.parameters
+
+    if(!(typeof parameters === 'object')) {
+        res.status(400).json({message: 'Bad request'})
+    }
+
+    if(Object.keys(parameters).every(x => Object.keys(req.user.parameters.toJSON()).includes(x))) {
+        for(const parameter in parameters) {
+            req.user.parameters[parameter] = parameters[parameter]
+        }
+        await req.user.save()
+        res.json({message: 'Parameters saved'})
+    } else {
+        res.status(400).json({message: 'Bad request'})
+    }
+
+})
+
 router.get('/lists', function(req, res) {
     const user = req.user.toJSON()
 

@@ -42,10 +42,6 @@ const Parameters = new mongoose.Schema({
     keepFoodListsIndependent: {
         type: Boolean,
         default: false
-    },
-    transferCheckedShoppingListItemsToFridge: {
-        type: Boolean,
-        default: true
     }
 })
 

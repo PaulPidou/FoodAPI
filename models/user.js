@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 const ItemQuantity = new mongoose.Schema({
     _id: false,
     quantity: { type: Number },
-    unit: {type: String }
+    unit: { type: String }
 })
 
 const ShoppingItem = new mongoose.Schema({

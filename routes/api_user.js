@@ -124,11 +124,11 @@ router.post('/shoppinglist/items', checkIfIngredientsExist, async function(req, 
 
 router.post('/shoppinglist/update/item/', async function(req, res) {
     let newShoppingList = []
-    for(const item in req.user.shoppingList) {
-        if(res.body.item.ingredientID === item.ingredientID.toString()) {
+    for(const item of req.user.shoppingList) {
+        if(req.body.item.ingredientID === item.ingredientID.toString()) {
             newShoppingList.push({
                 ...item,
-                quantities: res.body.item.quantities
+                quantities: req.body.item.quantities
             })
         } else {
             newShoppingList.push(item)
@@ -185,14 +185,15 @@ router.post('/fridge/items', checkIfIngredientsExist, async function(req, res) {
     res.json({ message: 'Items saved' })
 })
 
-router.post('/fridge/update/item/', async function(req, res) {
+router.post('/fridge/update/item', async function(req, res) {
     let newFridge = []
-    for(const item in req.user.fridge) {
-        if(res.body.item.ingredientID === item.ingredientID.toString()) {
+    for(const item of req.user.fridge) {
+        if(req.body.item.ingredientID === item.ingredientID.toString()) {
             newFridge.push({
-                ...item,
-                quantities: res.body.item.quantities,
-                expirationDate: res.body.item.expirationDate
+                ingredientID: item.ingredientID,
+                ingredientName: item.ingredientName,
+                quantities: req.body.item.quantities,
+                expirationDate: req.body.item.expirationDate
             })
         } else {
             newFridge.push(item)

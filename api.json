@@ -1241,6 +1241,44 @@
           }
         }
       }
+    },
+    "admin/ingredients/update/season": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Update season of given ingredients",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Ingredients to update along with their season",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredients": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/IngredientWithSeason" }
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingredients updated"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1538,6 +1576,33 @@
         "ingredientID",
         "substitutes"
       ]
+    },
+    "IngredientWithSeason": {
+      "type": "object",
+      "properties": {
+        "ingredientID": {"type": "string"},
+        "season": {
+          "type": "object",
+          "properties": {
+            "fullSeason": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "available": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "unavailable": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      },
+      "required": [
+        "ingredientID",
+        "season"
+      ]
     }
   },
   "components": {
@@ -1574,6 +1639,23 @@
                 "ingredientID": {"type": "string"},
                 "ingredientName": {"type": "string"},
                 "similarityScore": {"type": "number"}
+              }
+            }
+          },
+          "season": {
+            "type": "object",
+            "properties": {
+              "fullSeason": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "available": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "unavailable": {
+                "type": "array",
+                "items": {"type": "string"}
               }
             }
           }

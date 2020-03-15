@@ -3,7 +3,7 @@ import User from '../models/user'
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
 
-import { checkIfRecipesExist, checkIfIngredientsAndSubstitutesExist } from '../middlewares/checkExistence'
+import { checkIfRecipesExist, checkIfIngredientsExist, checkIfIngredientsAndSubstitutesExist } from '../middlewares/checkExistence'
 
 const router = express.Router()
 
@@ -56,6 +56,15 @@ router.post('/ingredients/update/substitutes', checkIfIngredientsAndSubstitutesE
     for(const ingredient of res.locals.ingredients) {
         await Ingredient.updateOne({ _id: ingredient.ingredientID }, {
             substitutes: ingredient.substitutes
+        }).exec()
+    }
+    res.json({ message: "Ingredients updated" })
+})
+
+router.post('/ingredients/update/season', checkIfIngredientsExist, async function(req, res) {
+    for(const ingredient of req.body.ingredients) {
+        await Ingredient.updateOne({ _id: ingredient.ingredientID }, {
+            season: ingredient.season
         }).exec()
     }
     res.json({ message: "Ingredients updated" })

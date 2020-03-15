@@ -15,6 +15,12 @@ const SubstituteSchema = new mongoose.Schema({
     }
 }, { _id : false })
 
+const SeasonSchema = new mongoose.Schema({
+    fullSeason: [String],
+    available: [String],
+    unavailable: [String]
+}, { _id : false })
+
 const IngredientSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -32,7 +38,8 @@ const IngredientSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Recipe'
     },
-    substitutes: [SubstituteSchema]
+    substitutes: [SubstituteSchema],
+    season: SeasonSchema
 })
 
 IngredientSchema.methods.toJSON = function() {

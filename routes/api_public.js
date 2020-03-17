@@ -1,6 +1,7 @@
 import express from 'express'
 import passport from 'passport'
 import jwt from 'jsonwebtoken'
+import moment from 'moment'
 
 import User from '../models/user'
 import Recipe from '../models/recipe'
@@ -44,6 +45,29 @@ router.get('/recipes/by/fame', function(req, res) {
                 res.status(404).json({message: "Recipes not found"})
                 return
             }
+        res.json(recipes)
+    })
+})
+
+router.get('/seasonal/recipes/by/fame', async function(req, res) {
+    const currentMonth = moment().format('MMMM')
+    const recipesID = await Ingredient.aggregate([
+        { $match : { "season.unavailable": currentMonth }},
+        { $unwind: { path: "$recipes" }},
+        { $group: {
+            _id: null,
+            recipesID: { $addToSet: "$recipes"}
+        }
+    }]).exec()
+
+    Recipe.find({_id: { $nin: recipesID[0].recipesID }}).select(
+        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, 'fame': 1, "totalTime": 1,
+            'ingredients.ingredientID': 1, 'ingredients.quantity': 1, 'ingredients.unit': 1})
+        .sort({'fame': -1}).limit(100).exec(function(err, recipes) {
+        if(err || !recipes) {
+            res.status(404).json({message: "Recipes not found"})
+            return
+        }
         res.json(recipes)
     })
 })

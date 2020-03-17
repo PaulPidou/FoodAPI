@@ -42,6 +42,10 @@ const Parameters = new mongoose.Schema({
     keepFoodListsIndependent: {
         type: Boolean,
         default: false
+    },
+    seasonalRecipes: {
+        type: Boolean,
+        default: true
     }
 })
 
@@ -72,7 +76,10 @@ const UserSchema = new mongoose.Schema({
     fridge: [FridgeItem],
     parameters: {
         type: Parameters,
-        default: {keepFoodListsIndependent: false}
+        default: {
+            keepFoodListsIndependent: false,
+            seasonalRecipes: true
+        }
     }
 })
 

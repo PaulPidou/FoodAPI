@@ -54,6 +54,12 @@ const getObject = function(obj) {
 }
 
 // Public
+export const getRecipesSummary = async function(recipeIDs) {
+    return await Recipe.find({_id: { $in: recipeIDs }}).select(
+        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+            'ingredients.quantity': 1, 'ingredients.unit': 1}).exec()
+}
+
 export const getRecipesWithSubstitutes = async function(recipeIDs) {
     return await Recipe.aggregate([
         { $match : { _id: { $in: recipeIDs.map(id => mongoose.mongo.ObjectId(id)) }}},
@@ -95,8 +101,7 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
         }
     }
 
-    const recipesDetails = await Recipe.find({_id: { $in: Object.keys(scores) }}).select(
-        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, "ingredients": 1}).exec()
+    const recipesDetails = await getRecipesSummary(Object.keys(scores))
 
     let recipes = {}
     let recipesCache = {}

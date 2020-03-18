@@ -8,7 +8,7 @@ import Recipe from '../models/recipe'
 import Ingredient from '../models/ingredients'
 
 import { checkIfRecipesExist } from '../middlewares/checkExistence'
-import { getRecipesWithSubstitutes, getRecipesByIngredients } from './utils'
+import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients } from './utils'
 
 import config from '../config'
 
@@ -24,16 +24,9 @@ router.post('/recipes/details', checkIfRecipesExist, async function(req, res) {
     res.json(recipes)
 })
 
-router.post('/recipes/summary', function(req, res) {
-    Recipe.find({_id: { $in: req.body.recipes}}).select(
-        {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
-            'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
-        if(err || !recipes) {
-            res.status(404).json({message: "Recipes not found"})
-            return
-        }
-        res.json(recipes)
-    })
+router.post('/recipes/summary', checkIfRecipesExist, async function(req, res) {
+    const recipes = await getRecipesSummary(req.body.recipes)
+    res.json(recipes)
 })
 
 router.get('/recipes/by/fame', function(req, res) {

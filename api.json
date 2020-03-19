@@ -154,6 +154,25 @@
         }
       }
     },
+    "/public/seasonal/recipes/by/fame": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get seasonal recipes by fame",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/RecipeForListWithFame"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/recipes/by/keywords": {
       "post": {
         "tags": ["Public"],

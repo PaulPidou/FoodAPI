@@ -34,12 +34,16 @@ const IngredientSchema = new mongoose.Schema({
     units: {
         type:[String]
     },
+    substitutes: [SubstituteSchema],
+    season: SeasonSchema,
     recipes: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Recipe'
     },
-    substitutes: [SubstituteSchema],
-    season: SeasonSchema
+    products: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Product'
+    }
 })
 
 IngredientSchema.methods.toJSON = function() {

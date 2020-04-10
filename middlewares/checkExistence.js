@@ -69,6 +69,32 @@ exports.checkIfIngredientsAndSubstitutesExist = function(req, res, next) {
     })
 }
 
+exports.checkIfProductIngredientsExist = function(req, res, next) {
+    const products = req.body.products
+
+    if(!products || !products.length) {
+        res.status(422).json({message: "Invalid input"})
+        return
+    }
+
+    let ids = []
+    for (const product of products) {
+        if(typeof product !== 'object') {
+            res.status(422).json({message: "Invalid input"})
+            return
+        }
+        ids.push(product.ingredientID)
+    }
+
+    Ingredient.find({_id: { $in: ids }}).exec(function(err, ingredients) {
+        if(err || !ingredients) {
+            res.status(404).json({ message: "Ingredients not found" })
+            return
+        }
+        return next()
+    })
+}
+
 exports.checkIfRecipesExist = function(req, res, next) {
     const ids = req.params.recipeID ? [req.params.recipeID] : req.body.recipes
 

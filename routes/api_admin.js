@@ -2,8 +2,10 @@ import express from "express"
 import User from '../models/user'
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
+import Product from "../models/product"
 
-import { checkIfRecipesExist, checkIfIngredientsExist, checkIfIngredientsAndSubstitutesExist } from '../middlewares/checkExistence'
+import { checkIfRecipesExist, checkIfIngredientsExist,
+    checkIfIngredientsAndSubstitutesExist, checkIfProductIngredientsExist } from '../middlewares/checkExistence'
 
 const router = express.Router()
 
@@ -68,6 +70,21 @@ router.post('/ingredients/update/season', checkIfIngredientsExist, async functio
         }).exec()
     }
     res.json({ message: "Ingredients updated" })
+})
+
+router.post('/products', checkIfProductIngredientsExist, async function(req, res) {
+    for(const product of req.body.products) {
+        await new Product({
+            name: product.name,
+            picture: product.picture ? product.picture : undefined,
+            brand: product.brand,
+            nutriscore: product.nutriscore ? product.nutriscore : undefined,
+            novaGroup: product.novaGroup ? product.novaGroup : undefined,
+            OFFUrl: product.OFFUrl,
+            ingredient: product.ingredientID
+        }).save()
+    }
+    res.json({ message: "Products saved" })
 })
 
 export default router

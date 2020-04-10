@@ -84,7 +84,7 @@ router.post('/products', checkIfProductIngredientsExist, async function(req, res
             ingredient: product.ingredientID
         }).save()
     }
-    res.json({ message: "Products saved" })
+    res.json({ message: "Products added" })
 })
 
 export default router

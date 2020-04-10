@@ -297,36 +297,6 @@
         }
       }
     },
-    "/public/ingredient/by/name/{name}": {
-      "get": {
-        "tags": ["Public"],
-        "summary": "Get an ingredient by name",
-        "produces": ["application/json"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "name",
-            "description": "Name of the ingredient",
-            "required": true,
-            "schema": {"type": "string"}
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Ingredient"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Ingredient not found"
-          }
-        }
-      }
-    },
     "/public/ingredient/by/autocompletion/{term}": {
       "get": {
         "tags": ["Public"],
@@ -352,6 +322,45 @@
                     "properties": {
                       "_id": {"type": "string"},
                       "name": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/products/by/ingredient/{ingredientID}": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Get products corresponding to an ingredient ",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredientID",
+            "description": "Identifier of the ingrediend",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {"type": "string"},
+                      "name": {"type": "string"},
+                      "picture":  {"type":  "string"},
+                      "brand": {"type":  "string"},
+                      "nutriscore": {"type":  "string"},
+                      "novaGroup": {"type":  "number"},
+                      "OFFUrl": {"type":  "string"}
                     }
                   }
                 }
@@ -1223,7 +1232,7 @@
         }
       }
     },
-    "admin/ingredients/update/substitutes": {
+    "/admin/ingredients/update/substitutes": {
       "post": {
         "tags": ["Admin"],
         "summary": "Update substitutes of given ingredients",
@@ -1261,7 +1270,7 @@
         }
       }
     },
-    "admin/ingredients/update/season": {
+    "/admin/ingredients/update/season": {
       "post": {
         "tags": ["Admin"],
         "summary": "Update season of given ingredients",
@@ -1295,6 +1304,44 @@
         "responses": {
           "200": {
             "description": "Ingredients updated"
+          }
+        }
+      }
+    },
+    "/admin/products": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Add products to the database",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Products to add to the database",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "products": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/Product" }
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products added"
           }
         }
       }
@@ -1334,8 +1381,27 @@
       "type": "object",
       "properties": {
         "_id": {"type": "string"},
+        "picture": {"type":  "string"},
         "name": {"type": "string"}
       }
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "picture":  {"type":  "string"},
+        "brand": {"type":  "string"},
+        "nutriscore": {"type":  "string"},
+        "novaGroup": {"type":  "number"},
+        "OFFUrl": {"type":  "string"},
+        "ingredientID": {"type":  "string"}
+      },
+      "required": [
+        "ingredientID",
+        "name",
+        "brand",
+        "OFFUrl"
+      ]
     },
     "Parameters": {
       "type": "object",
@@ -1636,12 +1702,8 @@
       "Ingredient": {
         "type": "object",
         "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
+          "_id": {"type": "string"},
+          "name": {"type": "string"},
           "units": {
             "type": "array",
             "items": {"type": "string"}
@@ -1677,11 +1739,35 @@
                 "items": {"type": "string"}
               }
             }
+          },
+          "products": {
+            "type": "array",
+            "items": {"type": "string"}
           }
         },
         "required": [
           "_id",
           "name"
+        ]
+      },
+      "Products": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "name": {"type": "string"},
+          "picture":  {"type":  "string"},
+          "brand": {"type":  "string"},
+          "nutriscore": {"type":  "string"},
+          "novaGroup": {"type":  "number"},
+          "OFFUrl": {"type":  "string"},
+          "ingredient": {"type":  "string"}
+        },
+        "required": [
+          "_id",
+          "name",
+          "brand",
+          "OFFUrl",
+          "ingredient"
         ]
       },
       "Recipe": {

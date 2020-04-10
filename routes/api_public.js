@@ -6,6 +6,7 @@ import moment from 'moment'
 import User from '../models/user'
 import Recipe from '../models/recipe'
 import Ingredient from '../models/ingredients'
+import Product from "../models/product"
 
 import { checkIfRecipesExist } from '../middlewares/checkExistence'
 import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients } from './utils'
@@ -134,16 +135,6 @@ router.get('/ingredient/:ingredientID', function(req, res) {
     })
 })
 
-router.get('/ingredient/by/name/:name', function(req, res) {
-    Ingredient.findOne({name: req.params.name}).exec(function(err, ingredient) {
-        if(err || !ingredient) {
-            res.status(404).json({message: "Ingredient not found"})
-            return
-        }
-        res.json(ingredient)
-    })
-})
-
 router.get('/ingredients/by/autocompletion/:term', function(req, res) {
     const regex = new RegExp('^' + req.params.term)
     Ingredient.find({name: regex}, {name: 1}).exec(function(err, ingredients) {
@@ -152,6 +143,16 @@ router.get('/ingredients/by/autocompletion/:term', function(req, res) {
             return
         }
         res.json(ingredients)
+    })
+})
+
+router.get('/products/by/ingredient/:ingredientID', async function(req, res) {
+    Product.find({ ingredient: req.params.ingredientID }, {ingredient: 0}).exec(function(err, products) {
+        if(err || !products) {
+            res.json([])
+            return
+        }
+        res.json(products)
     })
 })
 

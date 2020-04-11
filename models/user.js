@@ -8,6 +8,14 @@ const ItemQuantity = new mongoose.Schema({
     unit: { type: String }
 })
 
+const associatedProduct = new mongoose.Schema({
+    _id: false,
+    productID: { type: mongoose.Schema.Types.ObjectId },
+    name: { type: String },
+    brand: { type: String },
+    nutriscore: { type: String }
+})
+
 const ShoppingItem = new mongoose.Schema({
     _id: false,
     ingredientID: {
@@ -18,7 +26,8 @@ const ShoppingItem = new mongoose.Schema({
         type: String,
         required: true
     },
-    quantities: [ItemQuantity]
+    quantities: [ItemQuantity],
+    associatedProduct: associatedProduct
 })
 
 const FridgeItem = new mongoose.Schema({

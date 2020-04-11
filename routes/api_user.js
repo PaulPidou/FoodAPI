@@ -6,6 +6,7 @@ import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, r
     removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies, removeCookedIngredients
 } from '../utils/user'
 import { getCorrespondingItem } from './utils'
+import mongoose from "mongoose";
 
 const router = express.Router()
 
@@ -127,8 +128,10 @@ router.post('/shoppinglist/update/item/', async function(req, res) {
     for(const item of req.user.shoppingList) {
         if(req.body.item.ingredientID === item.ingredientID.toString()) {
             newShoppingList.push({
-                ...item,
-                quantities: req.body.item.quantities
+                ingredientID: item.ingredientID,
+                ingredientName: item.ingredientName,
+                quantities: req.body.item.quantities,
+                associatedProduct: req.body.item.associatedProduct
             })
         } else {
             newShoppingList.push(item)

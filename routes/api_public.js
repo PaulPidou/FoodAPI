@@ -147,7 +147,8 @@ router.get('/ingredients/by/autocompletion/:term', function(req, res) {
 })
 
 router.get('/products/by/ingredient/:ingredientID', async function(req, res) {
-    Product.find({ ingredient: req.params.ingredientID }, {ingredient: 0}).exec(function(err, products) {
+    Product.find({ ingredient: req.params.ingredientID }, {ingredient: 0}).sort({'nutriscore': 1}).
+    exec(function(err, products) {
         if(err || !products) {
             res.json([])
             return

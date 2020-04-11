@@ -150,4 +150,19 @@ RecipeSchema.methods.toJSON = function() {
 RecipeSchema.plugin(mongoosastic, { host: process.env.ELASTIC_HOST || '127.0.0.1' })
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
+/* TO REINDEX RECIPES IN ELASTICSEARCH
+const stream = Recipe.synchronize()
+let count = 0
+
+stream.on('data', function(err, doc){
+    count++
+})
+stream.on('close', function(){
+    console.log('indexed ' + count + ' documents!')
+})
+stream.on('error', function(err){
+    console.log(err)
+})
+*/
+
 export default Recipe

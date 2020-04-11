@@ -31,8 +31,6 @@ services:
     restart: always
     volumes:
       - es_data:/elasticsearch/data
-    environment:
-      - discovery.type=single-node
   kibana:
     image: docker.elastic.co/kibana/kibana:6.5.4
     restart: always

@@ -1,6 +1,7 @@
 import User from "../models/user"
 import Recipe from "../models/recipe"
-import { addNewItems, removeItems, unflatIngredients, combineQuantities, getDiffQuantities } from '../routes/utils'
+import { addNewItems, removeItems, unflatIngredients, combineQuantities, getDiffQuantities,
+    addAssociatedProducts } from '../routes/utils'
 
 /**
  * Get ingredients from saved recipes of a given user
@@ -252,7 +253,8 @@ export const handleListDependencies = async function(reqUser, action, object) {
         }
     }
 
-    reqUser.shoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
+    const newFullShoppingList = addNewItems(newShoppingList, itemsDiff.toKeep)
+    reqUser.shoppingList = addAssociatedProducts(newFullShoppingList, reqUser.shoppingList.toObject())
     await reqUser.save()
     return bool
 }

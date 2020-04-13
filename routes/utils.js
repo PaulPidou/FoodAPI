@@ -40,6 +40,11 @@ const convertFlatItemToCombinedOne = function(item) {
             ...combinedItem,
             expirationDate: item.expirationDate
         }
+    } else if(item.hasOwnProperty('associatedProduct')) {
+        return {
+            ...combinedItem,
+            associatedProduct: item.associatedProduct
+        }
     } else {
         return combinedItem
     }
@@ -318,4 +323,29 @@ export const removeItems = function(userItems, itemsToRemove) {
     }
     // No need to loop over itemsToRemove as we can only remove items which are within the userItems
     return combinedItems
+}
+
+export const addAssociatedProducts = function(newShoppingList, userShoppingList) {
+    let itemsWithProducts = []
+
+    const newItemsID = newShoppingList.map(item => item.ingredientID.toString())
+    const userItemsID = userShoppingList.map(item => item.ingredientID.toString())
+    const overlapIDs = newItemsID.filter(value => userItemsID.includes(value))
+
+    for(const newItem of newShoppingList) {
+        if(overlapIDs.includes(newItem.ingredientID.toString())) {
+            const userItem = getCorrespondingItem(userShoppingList, newItem.ingredientID.toString())
+            if(userItem.hasOwnProperty('associatedProduct')) {
+                itemsWithProducts.push({
+                    ...newItem,
+                    associatedProduct: userItem.associatedProduct
+                })
+            } else {
+                itemsWithProducts.push(newItem)
+            }
+        } else {
+            itemsWithProducts.push(newItem)
+        }
+    }
+    return itemsWithProducts
 }

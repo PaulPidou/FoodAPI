@@ -220,7 +220,14 @@ router.post('/move/items/from/shoppinglist/to/fridge', async function(req, res) 
         return
     }
     await removeItemsFromShoppingList(req.user._id, req.body.items)
-    await addItemsToFridge(req.user, items)
+    // REMOVE KEY: associatedProduct
+    await addItemsToFridge(req.user, items.map(
+        item => ({
+            ingredientID: item.ingredientID,
+            ingredientName: item.ingredientName,
+            quantities: item.quantities
+        })
+    ))
     res.json({message: "Items moved"})
 })
 
@@ -231,7 +238,14 @@ router.post('/move/items/from/fridge/to/shoppinglist', async function(req, res) 
         return
     }
     await removeItemsFromFridge(req.user._id, req.body.items)
-    await addItemsToShoppingList(req.user, items)
+    // REMOVE KEY: expirationDate
+    await addItemsToShoppingList(req.user, items.map(
+        item => ({
+            ingredientID: item.ingredientID,
+            ingredientName: item.ingredientName,
+            quantities: item.quantities
+        })
+    ))
     res.json({message: "Items moved"})
 })
 

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import moment from "moment"
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
 
@@ -88,14 +89,14 @@ export const getRecipesWithSubstitutes = async function(recipeIDs) {
     ]).exec()
 }
 
-export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=50) {
+export const getRecipesByIngredients = async function(ingredientIDs, seasonal, maxRecipes=50) {
     const recipesID = await Ingredient.aggregate([
         { $match : { _id: { $in: ingredientIDs.map(id => mongoose.mongo.ObjectId(id)) }}},
         { $project : { recipes: 1 }},
         { $unwind: { path: "$recipes", preserveNullAndEmptyArrays: true }},
         { $group: { _id: "$recipes", count: { $sum: 1 }}},
         { $sort: { count: -1 }}
-        ]).limit(maxRecipes).exec()
+    ]).limit(maxRecipes).exec()
 
     let scores = {}
     for (const recipe of recipesID) {
@@ -106,12 +107,25 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
         }
     }
 
+    if(!scores) { return [] }
+
     const recipesDetails = await getRecipesSummary(Object.keys(scores))
+
+    let forbiddenIngredients = []
+    if(seasonal) {
+        const nonSeasonalIngredients = await getNonSeasonalIngredients()
+        forbiddenIngredients = nonSeasonalIngredients.map(item => item._id).filter(value => !ingredientIDs.includes(value))
+    }
 
     let recipes = {}
     let recipesCache = {}
     for (const recipeDetails of recipesDetails) {
         if(!scores.hasOwnProperty(recipeDetails._id)) { continue }
+
+        if(seasonal) {
+            const overlap = recipeDetails.ingredients.map(item => item.ingredientID).filter(value => forbiddenIngredients.includes(value))
+            if(overlap.length > 0) { continue }
+        }
 
         scores[recipeDetails._id].listCoverage = scores[recipeDetails._id].count / ingredientIDs.length
         scores[recipeDetails._id].recipeCoverage = scores[recipeDetails._id].count / recipeDetails.ingredients.length
@@ -135,6 +149,43 @@ export const getRecipesByIngredients = async function(ingredientIDs, maxRecipes=
         })
     }
     return results
+}
+
+export const getNonSeasonalIngredients = async function() {
+    const currentMonth = moment().format('MMMM')
+    return await Ingredient.find({ "season.unavailable": currentMonth }).select({'_id': 1}).exec()
+}
+
+export const getNonSeasonalRecipes = async function() {
+    const currentMonth = moment().format('MMMM')
+    const recipesID = await Ingredient.aggregate([
+        { $match : { "season.unavailable": currentMonth }},
+        { $unwind: { path: "$recipes" }},
+        { $group: {
+                _id: null,
+                recipesID: { $addToSet: "$recipes"}
+            }
+        }]).exec()
+    return recipesID[0].recipesID
+}
+
+export const formatRecipesWithScore = function(err, recipes, scoreCache) {
+    if(err || !recipes) {
+        return []
+    }
+
+    return recipes.map((recipe) => {
+        return {
+            _id: recipe._id,
+            title: recipe.title,
+            budget: recipe.budget,
+            picture: recipe.picture,
+            difficulty: recipe.difficulty,
+            totalTime: recipe.totalTime,
+            ingredients: recipe.ingredients,
+            score: scoreCache[recipe._id]
+        }
+    })
 }
 
 export const getCorrespondingItem = function(itemList, itemID) {

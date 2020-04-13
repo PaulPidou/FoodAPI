@@ -1,7 +1,6 @@
 import express from 'express'
 import passport from 'passport'
 import jwt from 'jsonwebtoken'
-import moment from 'moment'
 
 import User from '../models/user'
 import Recipe from '../models/recipe'
@@ -9,7 +8,8 @@ import Ingredient from '../models/ingredients'
 import Product from "../models/product"
 
 import { checkIfRecipesExist } from '../middlewares/checkExistence'
-import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients } from './utils'
+import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients,
+    getNonSeasonalRecipes, getSeasonalRecipesByIngredients, formatRecipesWithScore } from './utils'
 
 import config from '../config'
 
@@ -44,17 +44,9 @@ router.get('/recipes/by/fame', function(req, res) {
 })
 
 router.get('/seasonal/recipes/by/fame', async function(req, res) {
-    const currentMonth = moment().format('MMMM')
-    const recipesID = await Ingredient.aggregate([
-        { $match : { "season.unavailable": currentMonth }},
-        { $unwind: { path: "$recipes" }},
-        { $group: {
-            _id: null,
-            recipesID: { $addToSet: "$recipes"}
-        }
-    }]).exec()
+    const recipesID = await getNonSeasonalRecipes()
 
-    Recipe.find({_id: { $nin: recipesID[0].recipesID }}).select(
+    Recipe.find({_id: { $nin: recipesID }}).select(
         {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, 'fame': 1, "totalTime": 1,
             'ingredients.ingredientID': 1, 'ingredients.quantity': 1, 'ingredients.unit': 1})
         .sort({'fame': -1}).limit(100).exec(function(err, recipes) {
@@ -80,32 +72,45 @@ router.post('/recipes/by/keywords', function(req, res) {
             scoreCache[recipe._id] = recipe._score
         }
 
-        Recipe.find({_id: { $in: recipeIDs}}).select(
+        Recipe.find({_id: { $in: recipeIDs }}).select(
             {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
                 'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
-            if(err || !recipes) {
-                res.json([])
-                return
-            }
-            res.json(
-                recipes.map((recipe) => {
-                    return {
-                        _id: recipe._id,
-                        title: recipe.title,
-                        budget: recipe.budget,
-                        picture: recipe.picture,
-                        difficulty: recipe.difficulty,
-                        totalTime: recipe.totalTime,
-                        ingredients: recipe.ingredients,
-                        score: scoreCache[recipe._id]
-                    }
-                }))
-        })
+                    res.json(formatRecipesWithScore(err, recipes, scoreCache))
+                })
+    })
+})
+
+router.post('/seasonal/recipes/by/keywords', function(req, res) {
+    Recipe.search({ query_string: { query: req.body.keywords }}, async function(err, results) {
+        if(err || !results || results.hits.total === 0) {
+            res.json([])
+            return
+        }
+
+        let recipeIDs = []
+        let scoreCache = {}
+        for(const recipe of results.hits.hits) {
+            recipeIDs.push(recipe._id)
+            scoreCache[recipe._id] = recipe._score
+        }
+
+        const nonSeasonalRecipes = await getNonSeasonalRecipes()
+
+        Recipe.find({_id: { $in: recipeIDs, $nin: nonSeasonalRecipes }}).select(
+            {"title": 1, "budget": 1, "picture": 1, "difficulty": 1, "totalTime": 1, 'ingredients.ingredientID': 1,
+                'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
+                    res.json(formatRecipesWithScore(err, recipes, scoreCache))
+                })
     })
 })
 
 router.post('/recipes/by/ingredients', async function(req, res) {
-    const recipes = await getRecipesByIngredients(req.body.ingredients)
+    const recipes = await getRecipesByIngredients(req.body.ingredients, false)
+    res.json(recipes)
+})
+
+router.post('/seasonal/recipes/by/ingredients', async function(req, res) {
+    const recipes = await getRecipesByIngredients(req.body.ingredients, true)
     res.json(recipes)
 })
 

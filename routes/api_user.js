@@ -6,7 +6,6 @@ import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, r
     removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies, removeCookedIngredients
 } from '../utils/user'
 import { getCorrespondingItem } from './utils'
-import mongoose from "mongoose";
 
 const router = express.Router()
 

@@ -1,7 +1,31 @@
 import mongoose from 'mongoose'
-import moment from "moment"
+import moment from 'moment'
+import CryptoJS from 'crypto-js'
+import sha256 from 'crypto-js/sha256'
+import fetch from 'node-fetch'
+import {cheerio} from 'cheerio'
+
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
+
+// Common
+export const checkIfRecipeIsInBase = async function(url) {
+    const hash = sha256(url).toString(CryptoJS.enc.Hex)
+    console.log(hash)
+    const recipe = await Recipe.find({ hashId: hash }).exec()
+    console.log(recipe)
+
+    if(recipe.length > 0) {
+        return recipe._id
+    }
+
+    fetch(url)
+        .then(res => {
+            const $ = cheerio.load(res)
+            console.log($)
+        })
+        .catch(err => console.error(err))
+}
 
 const sortObject = function(obj) {
     let sortable = []
@@ -188,6 +212,7 @@ export const formatRecipesWithScore = function(err, recipes, scoreCache) {
     })
 }
 
+// User
 export const getCorrespondingItem = function(itemList, itemID) {
     for(const item of itemList) {
         if(item.ingredientID.toString() === itemID) {

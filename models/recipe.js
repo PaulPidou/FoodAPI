@@ -64,12 +64,18 @@ const timingDetails = new mongoose.Schema({
 }, { _id : false })
 
 const RecipeSchema = new mongoose.Schema({
+    hashId: {
+        type: String,
+        index: true,
+        unique: true
+    },
     title: {
         type: String,
-        es_indexed:true,
+        index: true,
+        es_indexed: true,
         required: true
     },
-    author: { type: String },
+    author: { type: String, index: true },
     budget: {
         type: String,
         enum: ['bon marché', 'coût moyen', 'assez cher']
@@ -81,7 +87,7 @@ const RecipeSchema = new mongoose.Schema({
     recipeQuantity: RecipeQuantity,
     totalTime: { type: Number },
     timingDetails: timingDetails,
-    tags: [String],
+    tags: { type: [String], index: true },
     fame: {
         type: Number,
         default: 0
@@ -151,6 +157,7 @@ RecipeSchema.plugin(mongoosastic, { host: process.env.ELASTIC_HOST || '127.0.0.1
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
 // TO REINDEX RECIPES IN ELASTICSEARCH
+/*
 const stream = Recipe.synchronize()
 let count = 0
 
@@ -163,5 +170,6 @@ stream.on('close', function(){
 stream.on('error', function(err){
     logger.error(err)
 })
+ */
 
 export default Recipe

@@ -3,7 +3,7 @@ import moment from 'moment'
 import CryptoJS from 'crypto-js'
 import sha256 from 'crypto-js/sha256'
 import fetch from 'node-fetch'
-import {cheerio} from 'cheerio'
+import cheerio from 'cheerio'
 
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
@@ -13,16 +13,16 @@ export const checkIfRecipeIsInBase = async function(url) {
     const hash = sha256(url).toString(CryptoJS.enc.Hex)
     console.log(hash)
     const recipe = await Recipe.find({ hashId: hash }).exec()
-    console.log(recipe)
+    //console.log(recipe)
 
-    if(recipe.length > 0) {
-        return recipe._id
-    }
+    if(recipe.length > 0) { return recipe._id }
 
     fetch(url)
-        .then(res => {
-            const $ = cheerio.load(res)
-            console.log($)
+        .then(res => res.text())
+        .then(html => {
+            const $ = cheerio.load(html)
+            console.log($('script').get())
+            console.log($('.main-title').get())
         })
         .catch(err => console.error(err))
 }

@@ -31,9 +31,25 @@ export const handleRecipeUrl = async function(url) {
 const checkIfRecipeIsInBase = async function(parsedRecipe) {
     const recipes = await Recipe.find({ title: parsedRecipe.title }).exec()
 
+    let id = null
     if(recipes.length > 0) {
-        console.log(recipes)
+        for(const recipe of recipes) {
+            if(isSameRecipes(parsedRecipe, recipe)) {
+                id = recipe._id
+                break
+            }
+        }
     }
+    return id
+}
+
+const isSameRecipes = function(parsedRecipe, inBaseRecipe) {
+    return parsedRecipe.totalTime === inBaseRecipe.totalTime &&
+        parsedRecipe.recipe.length === inBaseRecipe.recipe.length &&
+        parsedRecipe.ingredients.length === inBaseRecipe.ingredients.length &&
+        parsedRecipe.recipe.every(step => inBaseRecipe.recipe.includes(step)) &&
+        parsedRecipe.ingredients.every(fIng => inBaseRecipe.ingredients
+            .map(sIng => sIng.ingredientName).includes(fIng.ingredientName))
 }
 
 const sortObject = function(obj) {

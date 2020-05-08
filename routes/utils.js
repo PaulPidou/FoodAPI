@@ -17,39 +17,27 @@ export const handleRecipeUrl = async function(url) {
 
     if(recipes.length > 0) { return recipes[0]._id }
 
-    fetch(url)
+    return await fetch(url)
         .then(res => res.text())
         .then(async (html) => {
             const $ = cheerio.load(html)
             const parsedRecipe = parseRecipePage($)
-            console.log(parsedRecipe)
-            await checkIfRecipeIsInBase(parsedRecipe)
+            parsedRecipe.hashId = hash
+            let recipeID = await checkIfRecipeIsInBase(parsedRecipe)
+            if(recipeID) { await updateRecipe(recipeID, parsedRecipe) }
+            else {
+                const diff = await checkIfIngredientsAreInBase(parsedRecipe)
+                console.log(diff)
+                /*
+                if(diff.length === 0) {
+                    const recipe = await new Recipe(parsedRecipe).save()
+                    recipeID =  recipe._id
+                }
+                 */
+            }
+            return recipeID
         })
         .catch(err => console.error(err))
-}
-
-const checkIfRecipeIsInBase = async function(parsedRecipe) {
-    const recipes = await Recipe.find({ title: parsedRecipe.title }).exec()
-
-    let id = null
-    if(recipes.length > 0) {
-        for(const recipe of recipes) {
-            if(isSameRecipes(parsedRecipe, recipe)) {
-                id = recipe._id
-                break
-            }
-        }
-    }
-    return id
-}
-
-const isSameRecipes = function(parsedRecipe, inBaseRecipe) {
-    return parsedRecipe.totalTime === inBaseRecipe.totalTime &&
-        parsedRecipe.recipe.length === inBaseRecipe.recipe.length &&
-        parsedRecipe.ingredients.length === inBaseRecipe.ingredients.length &&
-        parsedRecipe.recipe.every(step => inBaseRecipe.recipe.includes(step)) &&
-        parsedRecipe.ingredients.every(fIng => inBaseRecipe.ingredients
-            .map(sIng => sIng.ingredientName).includes(fIng.ingredientName))
 }
 
 const sortObject = function(obj) {
@@ -106,6 +94,46 @@ const getObject = function(obj) {
     } else {
         return obj
     }
+}
+
+const checkIfRecipeIsInBase = async function(parsedRecipe) {
+    const recipes = await Recipe.find({ title: parsedRecipe.title }).exec()
+    if(recipes.length > 0) {
+        for(const recipe of recipes) {
+            if(isSameRecipes(parsedRecipe, recipe)) {
+                return recipe._id
+            }
+        }
+    }
+    return null
+}
+
+const isSameRecipes = function(parsedRecipe, inBaseRecipe) {
+    return parsedRecipe.totalTime === inBaseRecipe.totalTime &&
+        parsedRecipe.timingDetails.cooking === inBaseRecipe.timingDetails.cooking &&
+        parsedRecipe.timingDetails.preparation === inBaseRecipe.timingDetails.preparation &&
+        parsedRecipe.timingDetails.rest === inBaseRecipe.timingDetails.rest &&
+        parsedRecipe.recipe.length === inBaseRecipe.recipe.length &&
+        parsedRecipe.ingredients.length === inBaseRecipe.ingredients.length &&
+        parsedRecipe.budget === inBaseRecipe.budget &&
+        parsedRecipe.difficulty === inBaseRecipe.difficulty &&
+        parsedRecipe.recipe.every(step => inBaseRecipe.recipe.includes(step)) &&
+        parsedRecipe.ingredients.every(fIng => inBaseRecipe.ingredients
+            .map(sIng => sIng.ingredientName).includes(fIng.ingredientName))
+}
+
+const updateRecipe = async function(recipeID, parsedRecipe) {
+    await Recipe.updateOne({ _id: recipeID }, parsedRecipe)
+}
+
+const checkIfIngredientsAreInBase = async function(parsedRecipe) {
+    const ingredients = await Ingredient
+        .find({ name: { $in: parsedRecipe.ingredients.map(item => item.ingredientName) }})
+        .select({'name': 1}).exec()
+
+    const arr1 = parsedRecipe.ingredients.map(item => item.ingredientName)
+    const arr2 = ingredients.map(item => item.name)
+    return arr1.filter(x => !arr2.includes(x)).concat(arr2.filter(x => !arr1.includes(x)))
 }
 
 // Public

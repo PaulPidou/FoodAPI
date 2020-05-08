@@ -33,8 +33,8 @@ router.post('/parameters', async function(req, res) {
 
 router.post('/add/recipe', async function(req, res) {
     const url = req.body.url
-    await handleRecipeUrl(url)
-    res.json({message: 'Recipe saved'})
+    const recipeID = await handleRecipeUrl(url)
+    res.json(recipeID)
 })
 
 router.get('/lists', function(req, res) {

@@ -35,7 +35,6 @@ router.post('/add/recipe', async function(req, res) {
     const url = req.body.url
     await checkIfRecipeIsInBase(url)
     res.json({message: 'Recipe saved'})
-
 })
 
 router.get('/lists', function(req, res) {

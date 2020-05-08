@@ -1,7 +1,7 @@
 export const parseRecipePage = function($) {
     const { recipeJSON, ingredientsJSON } = getJSONLinkedData($)
 
-    const recipe = {
+    return {
         title: recipeJSON.name,
         author: recipeJSON.author,
         budget: getItemTitle($('.recipe-infos__budget > span').get()),
@@ -20,7 +20,6 @@ export const parseRecipePage = function($) {
         utensils: getUtensils($),
         recipe: recipeJSON.recipeInstructions.map(step => step.text.trim())
     }
-    console.log(recipe)
 }
 
 const getJSONLinkedData = function($) {
@@ -70,17 +69,7 @@ const getItemTitle = function(itemSpans) {
 }
 
 const getTags = function($) {
-    const lis = $('.mrtn-tags-list > li').get()
-    const tags = []
-    for(const li of lis) {
-        const child = li.children[0]
-        if(child.type === 'tag' && child.name === 'a') {
-            tags.push(child.children[0].data.trim())
-        } else if(child.type === 'text') {
-            tags.push(child.data.trim())
-        }
-    }
-    return tags
+    return $('.mrtn-tags-list > li').map((i, elem) => $(elem).text().trim()).get()
 }
 
 const getFame = function($) {
@@ -93,84 +82,50 @@ const getFame = function($) {
             } else {
                 return parseInt(text)
             }
-
         }
     }
     return 0
 }
 
-const getIngredients = function($, ingredientsJSON) {
-    const ingredientsLi = $('.recipe-ingredients__list > li').get()
-
-    const ingredientsRaw = []
-    for(const li of ingredientsLi) {
-        let picture = '', quantity = '', ingredient = '', ingredientSingular = '', complement = ''
-        for(const child of li.children) {
-            if(child.type === 'tag' && child.name === 'div') {
-                for(const divChild of child.children) {
-                    if(divChild.type === 'tag' && divChild.name === 'span') {
-                        switch(divChild.attribs.class) {
-                            case 'recipe-ingredient-qt':
-                                quantity = divChild.children[0].data.trim()
-                                break
-                            case 'ingredient':
-                                ingredient = divChild.children[0].data.trim()
-                                break
-                            case 'recipe-ingredient__complement':
-                                complement = divChild.children[0].data.trim()
-                                break
-                        }
-                    } else if(divChild.type === 'tag' && divChild.name === 'p') {
-                        if(divChild.attribs.class === 'name_singular') {
-                            ingredientSingular = divChild.attribs['data-name-singular'].trim()
-                        }
-                    }
-                }
-            } else if(child.type === 'tag' && child.name === 'img') {
-                picture = child.attribs.src
-            }
-        }
-        ingredientsRaw.push({
-            picture: picture,
-            quantity: quantity,
-            ingredient: ingredient,
-            ingredientSingular: ingredientSingular,
-            complement: complement
+const getUtensils = function($) {
+    const utensils = []
+    $('.recipe-utensils__list > li').each((i, elem) => {
+        utensils.push({
+            picture: $(elem).find('img').attr('src'),
+            utensilName: $(elem).find('.recipe-utensil__name').text().trim()
         })
-    }
+    })
+    return utensils
+}
+
+const getIngredients = function($, ingredientsJSON) {
+    const ingredientsRaw = []
+    $('.recipe-ingredients__list > li').each((i, elem) => {
+        ingredientsRaw.push({
+            picture: $(elem).find('img').attr('src'),
+            quantity: $(elem).find('.recipe-ingredient-qt').text().trim(),
+            ingredient: $(elem).find('.ingredient').text().trim().toLowerCase(),
+            ingredientSingular: $(elem).find('.name_singular').attr('data-name-singular').trim().toLowerCase(),
+            complement: $(elem).find('.recipe-ingredient__complement').text().trim().toLowerCase()
+        })
+    })
 
     const ingredients = []
     for(const ingredient of ingredientsJSON) {
-        const index = ingredientsRaw.findIndex(item => item.ingredientSingular.includes(ingredient.name))
+        const index = ingredientsRaw.findIndex(
+            item => item.ingredientSingular.includes(ingredient.name.toLowerCase()))
         ingredients.push({
             display: ingredientsRaw[index].quantity.concat(' ')
                 .concat(ingredientsRaw[index].ingredient).concat(' ')
                 .concat(ingredientsRaw[index].complement).trim(),
-            ingredientName: ingredient.name,
+            ingredientName: ingredient.name.toLowerCase(),
             quantity: ingredient.qty,
-            unit: ingredient.unit,
+            unit: ingredient.unit.toLowerCase(),
             complement: ingredientsRaw[index].complement,
             picture: ingredientsRaw[index].picture
         })
     }
     return ingredients
-}
-
-const getUtensils = function($) {
-    const utensilsLi = $('.recipe-utensils__list > li').get()
-    const utensils = []
-    for(const utensil of utensilsLi) {
-        let utensilName = '', picture = ''
-        for(const child of utensil.children) {
-            if(child.type === 'tag' && child.name === 'span') {
-                utensilName = child.children[0].data.trim()
-            } else if(child.type === 'tag' && child.name === 'img') {
-                picture = child.attribs.src
-            }
-        }
-        utensils.push({ utensilName: utensilName, picture: picture })
-    }
-    return utensils
 }
 
 const getTime = function(str) {

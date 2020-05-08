@@ -5,7 +5,7 @@ import { checkIfIngredientsExist, checkIfRecipesExist } from '../middlewares/che
 import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList,
     removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies, removeCookedIngredients
 } from '../utils/user'
-import { checkIfRecipeIsInBase, getCorrespondingItem } from './utils'
+import { handleRecipeUrl, getCorrespondingItem } from './utils'
 
 const router = express.Router()
 
@@ -33,7 +33,7 @@ router.post('/parameters', async function(req, res) {
 
 router.post('/add/recipe', async function(req, res) {
     const url = req.body.url
-    await checkIfRecipeIsInBase(url)
+    await handleRecipeUrl(url)
     res.json({message: 'Recipe saved'})
 })
 

@@ -10,20 +10,30 @@ import Ingredient from "../models/ingredients"
 import {parseRecipePage} from "../utils/parser"
 
 // Common
-export const checkIfRecipeIsInBase = async function(url) {
+export const handleRecipeUrl = async function(url) {
     const hash = sha256(url).toString(CryptoJS.enc.Hex)
     console.log(hash)
-    const recipe = await Recipe.find({ hashId: hash }).exec()
+    const recipes = await Recipe.find({ hashId: hash }).select({"_id": 1}).exec()
 
-    if(recipe.length > 0) { return recipe._id }
+    if(recipes.length > 0) { return recipes[0]._id }
 
     fetch(url)
         .then(res => res.text())
-        .then(html => {
+        .then(async (html) => {
             const $ = cheerio.load(html)
-            parseRecipePage($)
+            const parsedRecipe = parseRecipePage($)
+            console.log(parsedRecipe)
+            await checkIfRecipeIsInBase(parsedRecipe)
         })
         .catch(err => console.error(err))
+}
+
+const checkIfRecipeIsInBase = async function(parsedRecipe) {
+    const recipes = await Recipe.find({ title: parsedRecipe.title }).exec()
+
+    if(recipes.length > 0) {
+        console.log(recipes)
+    }
 }
 
 const sortObject = function(obj) {

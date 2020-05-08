@@ -8,9 +8,8 @@ import Ingredient from '../models/ingredients'
 import Product from "../models/product"
 
 import { checkIfRecipesExist } from '../middlewares/checkExistence'
-import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients,
-    getNonSeasonalRecipes, getSeasonalRecipesByIngredients, formatRecipesWithScore } from './utils'
-
+import { getRecipesSummary, getRecipesWithSubstitutes, getRecipesByIngredients, getNonSeasonalRecipes,
+    formatRecipesWithScore } from './utils'
 import config from '../config'
 
 const router = express.Router()

@@ -7,13 +7,13 @@ import cheerio from 'cheerio'
 
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
+import {parseRecipePage} from "../utils/parser"
 
 // Common
 export const checkIfRecipeIsInBase = async function(url) {
     const hash = sha256(url).toString(CryptoJS.enc.Hex)
     console.log(hash)
     const recipe = await Recipe.find({ hashId: hash }).exec()
-    //console.log(recipe)
 
     if(recipe.length > 0) { return recipe._id }
 
@@ -21,8 +21,7 @@ export const checkIfRecipeIsInBase = async function(url) {
         .then(res => res.text())
         .then(html => {
             const $ = cheerio.load(html)
-            console.log($('script').get())
-            console.log($('.main-title').get())
+            parseRecipePage($)
         })
         .catch(err => console.error(err))
 }

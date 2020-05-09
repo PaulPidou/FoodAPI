@@ -123,7 +123,7 @@ const isSameRecipes = function(parsedRecipe, inBaseRecipe) {
 }
 
 const updateRecipe = async function(recipeID, parsedRecipe) {
-    await Recipe.updateOne({ _id: recipeID }, parsedRecipe)
+    await Recipe.updateOne({ _id: recipeID }, { $set: { fame: parsedRecipe.fame, hashId: parsedRecipe.hashId }})
 }
 
 const checkIfIngredientsAreInBase = async function(parsedRecipe) {

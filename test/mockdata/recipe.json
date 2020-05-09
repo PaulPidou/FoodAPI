@@ -1,0 +1,51 @@
+{
+  "_id": 123,
+  "title": "Cannelés croustillants et bien dorés",
+  "budget": "coût moyen",
+  "difficulty": "facile",
+  "recipeQuantity": { "unit": "personnes", "value": 12 },
+  "totalTime": 1606,
+  "timingDetails": { "cooking": 65, "preparation": 26, "rest": 1515 },
+  "tags": [ "Confiserie", "Végétarien", "Petits gâteaux", "Gâteau", "Cannelés" ],
+  "fame": 107,
+  "ingredients": [
+    { "ingredientName": "lait entier" },
+    { "ingredientName": "sucre" },
+    { "ingredientName": "farine" },
+    { "ingredientName": "oeuf" },
+    { "ingredientName": "oeuf" },
+    { "ingredientName": "beurre" },
+    { "ingredientName": "rhum" },
+    { "ingredientName": "vanille" },
+    { "ingredientName": "beurre doux" }
+  ],
+  "utensils": [
+    {
+      "picture": "https://assets.afcdn.com/recipe/20170613/68804_w120h120c1cx350cy350.jpg",
+      "utensilName": "1 casserole"
+    },
+    {
+      "picture": "https://assets.afcdn.com/recipe/20170613/68820_w120h120c1cx350cy350.jpg",
+      "utensilName": "1 four"
+    },
+    {
+      "picture": "https://assets.afcdn.com/recipe/20170613/68852_w120h120c1cx350cy350.jpg",
+      "utensilName": "1 plaque à four"
+    },
+    {
+      "picture": "https://assets.afcdn.com/recipe/20170613/68862_w120h120c1cx350cy350.jpg",
+      "utensilName": "1 réfrigérateur"
+    }
+  ],
+  "recipe": [
+    "Mouiller légèrement la casserole avant d’y verser le lait pour éviter qu’il ne colle trop aux parois.",
+    "Inciser la gousse de vanille et gratter l’intérieur pour récupérer les graines.",
+    "Couvrir et laisser reposer 15 minutes.",
+    "Pendant ce temps, fouetter les œufs entiers et les jaunes avec le sucre jusqu’à ce que le mélange double de volume.",
+    "Incorporer la farine puis verser progressivement le lait tiédi.",
+    "Laisser refroidir à température ambiante puis parfumer de rhum. Couvrir puis placer au réfrigérateur pendant 24 à 48h.\nCe temps de repos est nécessaire pour que la pâte repose et prenne la bonne consistance.",
+    "Le jour J avant la cuisson, sortir du froid, mélanger à nouveau et laisser reposer 1h.",
+    "Beurrer les moules et mettre un morceau de beurre dans chaque puis les poser sur une plaque à four perforée pour une bonne diffusion de la chaleur. Passer le tout au four en le mettant à préchauffer à 220°C (thermostat 7-8).",
+    "Une fois bien chaud, verser la pâte dans les moules en les remplissant aux ¾.\nEnfourner pour 5 minutes de cuisson à 220°C puis baisser à 180°C pour 1 heure de cuisson supplémentaire."
+  ]
+}

@@ -8,7 +8,7 @@ import log from 'log4js'
 
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
-import {parseRecipePage} from "../utils/parser"
+import { parseRecipePage } from "../utils/parser"
 
 // Common
 const sortObject = function(obj) {

@@ -1,19 +1,19 @@
 /* global describe it */
 
 import chai from 'chai'
+import nock from 'nock'
+import sinon from 'sinon'
+import 'sinon-mongoose'
+import fs from 'fs'
+import path from 'path'
 
+import Recipe from "../models/recipe"
+import Ingredient from "../models/ingredients";
 import { getCorrespondingItem, combineQuantities, getDiffQuantities, unflatIngredients,
-    addNewItems, removeItems } from '../routes/utils'
+    addNewItems, removeItems, handleRecipeUrl } from '../routes/utils'
+import recipe from './mockdata/recipe.json'
 
-chai.should()
-
-describe('routes/api_public', function() {
-
-})
-
-describe('routes/api_user', function() {
-
-})
+const should = chai.should()
 
 describe('routes/utils', function() {
     it('getCorrespondingItem()', function() {
@@ -31,7 +31,6 @@ describe('routes/utils', function() {
         const item = getCorrespondingItem(itemList, '234')
         item.should.have.own.property('ingredientName')
         item.ingredientName.should.equal('B')
-
     })
 
     it('combineQuantities() - General', function() {
@@ -271,6 +270,99 @@ describe('routes/utils', function() {
                 quantities: [{unit: 'cl', quantity: 20}]
             }
         ])
+    })
 
+    it('handleRecipeUrl() - Fail to fetch', async function() {
+        const hash = "0b7548ea738f83a58141da68f2a85463368b260dd6d97e39818a3f8f40905426"
+
+        const mockFind = {
+            select: function () { return this },
+            exec: sinon.stub().resolves([])
+        }
+
+        const s = sinon.stub(Recipe, 'find')
+        s.withArgs({ hashId: hash })
+            .returns(mockFind)
+
+        nock('https://www.website.com')
+            .get('/recipes/recipe123')
+            .replyWithError('Fail to fetch')
+
+        const recipeID = await handleRecipeUrl('https://www.website.com/recipes/recipe123')
+        should.not.exist(recipeID)
+
+        Recipe.find.restore()
+    })
+
+    it('handleRecipeUrl() - Already in base', async function() {
+        const hash = "0b7548ea738f83a58141da68f2a85463368b260dd6d97e39818a3f8f40905426"
+
+        const mockFind = {
+            select: function () { return this },
+            exec: sinon.stub().resolves([])
+        }
+
+        const s = sinon.stub(Recipe, 'find')
+        s.withArgs({ hashId: hash })
+            .returns(mockFind)
+
+        s.withArgs({ title: recipe.title })
+            .returns({
+                ...mockFind,
+                exec: sinon.stub().resolves([recipe])
+            })
+
+        const recipePage = fs.readFileSync(path.join(__dirname, 'mockdata', 'recipe.html'))
+        nock('https://www.website.com')
+            .get('/recipes/recipe123')
+            .reply(200, recipePage)
+
+        sinon.mock(Recipe)
+            .expects('updateOne')
+            .withArgs({ _id: recipe._id }, { $set: { fame: recipe.fame, hashId: hash }})
+            .resolves(0)
+
+        const recipeID = await handleRecipeUrl('https://www.website.com/recipes/recipe123')
+        recipeID.should.be.equal(recipe._id)
+
+        Recipe.find.restore()
+        Recipe.updateOne.restore()
+    })
+
+    it('handleRecipeUrl() - Not in base', async function() {
+        const hash = "0b7548ea738f83a58141da68f2a85463368b260dd6d97e39818a3f8f40905426"
+
+        const mockFind = {
+            select: function () { return this },
+            exec: sinon.stub().resolves([])
+        }
+
+        const s1 = sinon.stub(Recipe, 'find')
+        s1.withArgs({ hashId: hash })
+            .returns(mockFind)
+
+        s1.withArgs({ title: recipe.title })
+            .returns({
+                ...mockFind,
+                exec: sinon.stub().resolves([])
+            })
+
+        const recipePage = fs.readFileSync(path.join(__dirname, 'mockdata', 'recipe.html'))
+        nock('https://www.website.com')
+            .get('/recipes/recipe123')
+            .reply(200, recipePage)
+
+        const s2 = sinon.stub(Ingredient, 'find')
+        s2.withArgs({ name: { $in: recipe.ingredients.map(item => item.ingredientName) }})
+            .returns({
+                ...mockFind,
+                exec: sinon.stub().resolves([{ name: recipe.ingredients[0].ingredientName }])
+            })
+
+        const recipeID = await handleRecipeUrl('https://www.website.com/recipes/recipe123')
+        should.not.exist(recipeID)
+
+        Recipe.find.restore()
+        Ingredient.find.restore()
     })
 })

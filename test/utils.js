@@ -1,4 +1,4 @@
-/* global describe it afterEach */
+/* global describe it before afterEach */
 
 import chai from 'chai'
 import sinon from 'sinon'
@@ -6,12 +6,12 @@ import 'sinon-mongoose'
 
 import Recipe from '../models/recipe'
 import User from '../models/user'
-import { removeCookedIngredients, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies } from '../utils/user'
+import { removeCookedIngredients, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies} from '../utils/user'
 
 chai.should()
 
-describe('utils/users - handleListDependencies', function() {
-    afterEach(function() {
+describe('utils/user - handleListDependencies', function() {
+    afterEach(() => {
         Recipe.find.restore()
         User.findById.restore()
         if(User.hasOwnProperty('findByIdAndUpdate')) {

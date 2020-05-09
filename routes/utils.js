@@ -4,6 +4,7 @@ import CryptoJS from 'crypto-js'
 import sha256 from 'crypto-js/sha256'
 import fetch from 'node-fetch'
 import cheerio from 'cheerio'
+import log from 'log4js'
 
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
@@ -455,6 +456,7 @@ export const handleRecipeUrl = async function(url) {
 
     if(recipes.length > 0) { return recipes[0]._id }
 
+    log.getLogger().info(`Fetching recipe from ${url}`)
     return await fetch(url)
         .then(res => res.text())
         .then(async (html) => {
@@ -470,9 +472,15 @@ export const handleRecipeUrl = async function(url) {
                 if(diff.length === 0) {
                     const recipe = await new Recipe(parsedRecipe).save()
                     recipeID =  recipe._id
+                } else {
+                    log.getLogger().info(`Identify missing ingredients ${diff} while fetching recipe from ${url}`)
                 }
             }
             return recipeID
         })
-        .catch(() => {return null})
+        .catch((err) => {
+            log.getLogger().error(`Fail to fetch recipe from ${url}`)
+            log.getLogger().error(err)
+            return null
+        })
 }

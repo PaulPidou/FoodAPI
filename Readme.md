@@ -2,9 +2,9 @@
 
 Backend of the react-native app [FoodApp](https://github.com/PaulPidou/FoodApp).
 
-The app allows users to browse recipes and save them to later use. 
+The app allows users to browse recipes and save them for later use. 
 Users can search for recipes according to items within their fridges.
-By default, when a recipe is saved the ingredients needed to it which are missing from the fridge are added to the shopping list of the user.
+By default, when a recipe is saved the needed ingredients which are missing from the fridge are added to the shopping list of the user.
 
 ## Stack
 

@@ -33,6 +33,10 @@ router.post('/parameters', async function(req, res) {
 
 router.post('/add/recipe', async function(req, res) {
     const url = req.body.url
+    if(!url.startsWith('https://www.marmiton.org/recettes/')) {
+        res.status(400).json({message: 'Bad request'})
+        return
+    }
     const recipeID = await handleRecipeUrl(url)
     res.json(recipeID)
 })

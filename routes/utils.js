@@ -474,5 +474,5 @@ export const handleRecipeUrl = async function(url) {
             }
             return recipeID
         })
-        .catch(err => console.error(err))
+        .catch(() => {return null})
 }

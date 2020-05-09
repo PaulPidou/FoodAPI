@@ -55,8 +55,9 @@ router.get('/lists', function(req, res) {
             'ingredients.quantity': 1, 'ingredients.unit': 1}).exec(function(err, recipes) {
         if(err || !recipes) {
             user.savedRecipes = []
+        } else {
+            user.savedRecipes = recipes
         }
-        user.savedRecipes = recipes
         res.json(user)
     })
 })

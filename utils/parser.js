@@ -1,3 +1,5 @@
+import ingredientsMap from './ingredientsMap.json'
+
 export const parseRecipePage = function($) {
     const { recipeJSON, ingredientsJSON } = getJSONLinkedData($)
 
@@ -15,7 +17,7 @@ export const parseRecipePage = function($) {
         },
         tags: getTags($),
         fame: getFame($),
-        picture: recipeJSON.image,
+        picture: recipeJSON.image.includes('default-recipe-picture') ? '' : recipeJSON.image,
         ingredients: getIngredients($, ingredientsJSON),
         utensils: getUtensils($),
         recipe: recipeJSON.recipeInstructions.map(step => step.text.trim())
@@ -114,11 +116,12 @@ const getIngredients = function($, ingredientsJSON) {
     for(const ingredient of ingredientsJSON) {
         const index = ingredientsRaw.findIndex(
             item => item.ingredientSingular.includes(ingredient.name.toLowerCase()))
+        const ingredientName = getIngredientName(ingredient.name.toLowerCase())
         ingredients.push({
             display: ingredientsRaw[index].quantity.concat(' ')
                 .concat(ingredientsRaw[index].ingredient).concat(' ')
                 .concat(ingredientsRaw[index].complement).trim(),
-            ingredientName: ingredient.name.toLowerCase(),
+            ingredientName: ingredientName,
             quantity: ingredient.qty,
             unit: ingredient.unit.toLowerCase(),
             complement: ingredientsRaw[index].complement,
@@ -131,4 +134,16 @@ const getIngredients = function($, ingredientsJSON) {
 const getTime = function(str) {
     if(!str) { return 0 }
     return parseInt(str.substring(2, str.length -1))
+}
+
+const getIngredientName = function(name) {
+    for(const ingredientName in ingredientsMap) {
+        if(ingredientName === name) {
+            return name
+        }
+        if(ingredientsMap[ingredientName].includes(name)) {
+            return ingredientName
+        }
+    }
+    return name
 }

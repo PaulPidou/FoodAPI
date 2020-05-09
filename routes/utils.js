@@ -10,36 +10,6 @@ import Ingredient from "../models/ingredients"
 import {parseRecipePage} from "../utils/parser"
 
 // Common
-export const handleRecipeUrl = async function(url) {
-    const hash = sha256(url).toString(CryptoJS.enc.Hex)
-    console.log(hash)
-    const recipes = await Recipe.find({ hashId: hash }).select({"_id": 1}).exec()
-
-    if(recipes.length > 0) { return recipes[0]._id }
-
-    return await fetch(url)
-        .then(res => res.text())
-        .then(async (html) => {
-            const $ = cheerio.load(html)
-            const parsedRecipe = parseRecipePage($)
-            parsedRecipe.hashId = hash
-            let recipeID = await checkIfRecipeIsInBase(parsedRecipe)
-            if(recipeID) { await updateRecipe(recipeID, parsedRecipe) }
-            else {
-                const diff = await checkIfIngredientsAreInBase(parsedRecipe)
-                console.log(diff)
-                /*
-                if(diff.length === 0) {
-                    const recipe = await new Recipe(parsedRecipe).save()
-                    recipeID =  recipe._id
-                }
-                 */
-            }
-            return recipeID
-        })
-        .catch(err => console.error(err))
-}
-
 const sortObject = function(obj) {
     let sortable = []
     for (const key in obj) {
@@ -477,4 +447,32 @@ export const addAssociatedProducts = function(newShoppingList, userShoppingList)
         }
     }
     return itemsWithProducts
+}
+
+export const handleRecipeUrl = async function(url) {
+    const hash = sha256(url).toString(CryptoJS.enc.Hex)
+    const recipes = await Recipe.find({ hashId: hash }).select({"_id": 1}).exec()
+
+    if(recipes.length > 0) { return recipes[0]._id }
+
+    return await fetch(url)
+        .then(res => res.text())
+        .then(async (html) => {
+            const $ = cheerio.load(html)
+
+            const parsedRecipe = parseRecipePage($)
+            parsedRecipe.hashId = hash
+
+            let recipeID = await checkIfRecipeIsInBase(parsedRecipe)
+            if(recipeID) { await updateRecipe(recipeID, parsedRecipe) }
+            else {
+                const diff = await checkIfIngredientsAreInBase(parsedRecipe)
+                if(diff.length === 0) {
+                    const recipe = await new Recipe(parsedRecipe).save()
+                    recipeID =  recipe._id
+                }
+            }
+            return recipeID
+        })
+        .catch(err => console.error(err))
 }

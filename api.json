@@ -499,6 +499,45 @@
         }
       }
     },
+    "/user/add/recipe": {
+      "post": {
+        "tags": ["Authenticated user"],
+        "summary": "Add a new recipe to base from URL",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "URL of the recipe to add",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "url": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ID of the recipe"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
     "/user/lists": {
       "get": {
         "tags": ["Authenticated user"],
@@ -1466,7 +1505,8 @@
             "cooking": {"type": "number"},
             "rest": {"type": "number"}
           }
-        }
+        },
+        "hashId": {"type":  "string"}
       },
       "required": [
         "title"

@@ -1,8 +1,16 @@
 import mongoose from 'mongoose'
-import moment from "moment"
+import moment from 'moment'
+import CryptoJS from 'crypto-js'
+import sha256 from 'crypto-js/sha256'
+import fetch from 'node-fetch'
+import cheerio from 'cheerio'
+import log from 'log4js'
+
 import Recipe from '../models/recipe'
 import Ingredient from "../models/ingredients"
+import { parseRecipePage } from "../utils/parser"
 
+// Common
 const sortObject = function(obj) {
     let sortable = []
     for (const key in obj) {
@@ -57,6 +65,46 @@ const getObject = function(obj) {
     } else {
         return obj
     }
+}
+
+const checkIfRecipeIsInBase = async function(parsedRecipe) {
+    const recipes = await Recipe.find({ title: parsedRecipe.title }).exec()
+    if(recipes.length > 0) {
+        for(const recipe of recipes) {
+            if(isSameRecipes(parsedRecipe, recipe)) {
+                return recipe._id
+            }
+        }
+    }
+    return null
+}
+
+const isSameRecipes = function(parsedRecipe, inBaseRecipe) {
+    return parsedRecipe.totalTime === inBaseRecipe.totalTime &&
+        parsedRecipe.timingDetails.cooking === inBaseRecipe.timingDetails.cooking &&
+        parsedRecipe.timingDetails.preparation === inBaseRecipe.timingDetails.preparation &&
+        parsedRecipe.timingDetails.rest === inBaseRecipe.timingDetails.rest &&
+        parsedRecipe.recipe.length === inBaseRecipe.recipe.length &&
+        parsedRecipe.ingredients.length === inBaseRecipe.ingredients.length &&
+        parsedRecipe.budget === inBaseRecipe.budget &&
+        parsedRecipe.difficulty === inBaseRecipe.difficulty &&
+        parsedRecipe.recipe.every(step => inBaseRecipe.recipe.includes(step)) &&
+        parsedRecipe.ingredients.every(fIng => inBaseRecipe.ingredients
+            .map(sIng => sIng.ingredientName).includes(fIng.ingredientName))
+}
+
+const updateRecipe = async function(recipeID, parsedRecipe) {
+    await Recipe.updateOne({ _id: recipeID }, { $set: { fame: parsedRecipe.fame, hashId: parsedRecipe.hashId }})
+}
+
+const checkIfIngredientsAreInBase = async function(parsedRecipe) {
+    const ingredients = await Ingredient
+        .find({ name: { $in: parsedRecipe.ingredients.map(item => item.ingredientName) }})
+        .select({'name': 1}).exec()
+
+    const arr1 = parsedRecipe.ingredients.map(item => item.ingredientName)
+    const arr2 = ingredients.map(item => item.name)
+    return arr1.filter(x => !arr2.includes(x)).concat(arr2.filter(x => !arr1.includes(x)))
 }
 
 // Public
@@ -188,6 +236,7 @@ export const formatRecipesWithScore = function(err, recipes, scoreCache) {
     })
 }
 
+// User
 export const getCorrespondingItem = function(itemList, itemID) {
     for(const item of itemList) {
         if(item.ingredientID.toString() === itemID) {
@@ -399,4 +448,39 @@ export const addAssociatedProducts = function(newShoppingList, userShoppingList)
         }
     }
     return itemsWithProducts
+}
+
+export const handleRecipeUrl = async function(url) {
+    const hash = sha256(url).toString(CryptoJS.enc.Hex)
+    const recipes = await Recipe.find({ hashId: hash }).select({"_id": 1}).exec()
+
+    if(recipes.length > 0) { return recipes[0]._id }
+
+    log.getLogger().info(`Fetching recipe from ${url}`)
+    return await fetch(url)
+        .then(res => res.text())
+        .then(async (html) => {
+            const $ = cheerio.load(html)
+
+            const parsedRecipe = parseRecipePage($)
+            parsedRecipe.hashId = hash
+
+            let recipeID = await checkIfRecipeIsInBase(parsedRecipe)
+            if(recipeID) { await updateRecipe(recipeID, parsedRecipe) }
+            else {
+                const diff = await checkIfIngredientsAreInBase(parsedRecipe)
+                if(diff.length === 0) {
+                    const recipe = await new Recipe(parsedRecipe).save()
+                    recipeID =  recipe._id
+                } else {
+                    log.getLogger().info(`Identify missing ingredients ${diff} while fetching recipe from ${url}`)
+                }
+            }
+            return recipeID
+        })
+        .catch((err) => {
+            log.getLogger().error(`Fail to fetch recipe from ${url}`)
+            log.getLogger().error(err)
+            return null
+        })
 }

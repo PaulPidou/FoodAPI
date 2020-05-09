@@ -1,7 +1,7 @@
 import Ingredient from "../models/ingredients"
 import Recipe from "../models/recipe"
 
-exports.checkIfIngredientsExist = function(req, res, next) {
+export const checkIfIngredientsExist = function(req, res, next) {
     let ids = req.params.ingredients ? req.params.ingredients.split(',') : req.body.ingredients
 
     if(!ids || !ids.length) {
@@ -21,7 +21,7 @@ exports.checkIfIngredientsExist = function(req, res, next) {
     })
 }
 
-exports.checkIfIngredientsAndSubstitutesExist = function(req, res, next) {
+export const checkIfIngredientsAndSubstitutesExist = function(req, res, next) {
     let ingredients = req.body.ingredients
 
     if(!ingredients || !ingredients.length) {
@@ -69,7 +69,7 @@ exports.checkIfIngredientsAndSubstitutesExist = function(req, res, next) {
     })
 }
 
-exports.checkIfProductIngredientsExist = function(req, res, next) {
+export const checkIfProductIngredientsExist = function(req, res, next) {
     const products = req.body.products
 
     if(!products || !products.length) {
@@ -95,7 +95,7 @@ exports.checkIfProductIngredientsExist = function(req, res, next) {
     })
 }
 
-exports.checkIfRecipesExist = function(req, res, next) {
+export const checkIfRecipesExist = function(req, res, next) {
     const ids = req.params.recipeID ? [req.params.recipeID] : req.body.recipes
 
     if(!ids || !ids.length) {

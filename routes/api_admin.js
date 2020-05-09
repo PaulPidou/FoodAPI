@@ -33,7 +33,8 @@ router.post('/recipe', function(req, res) {
         picture: req.body.picture,
         ingredients: req.body.ingredients,
         utensils: req.body.utensils,
-        recipe: req.body.recipe
+        recipe: req.body.recipe,
+        hashId: req.body.hashId
     })
     recipe.save((err, recipe) => {
         if(err) {

@@ -5,7 +5,7 @@ import { checkIfIngredientsExist, checkIfRecipesExist } from '../middlewares/che
 import { saveRecipes, removeRecipes, addItemsToShoppingList, addItemsToFridge, removeItemsFromShoppingList,
     removeItemsFromFridge, getItemsFromShoppingList, getItemsFromFridge, handleListDependencies, removeCookedIngredients
 } from '../utils/user'
-import { getCorrespondingItem } from './utils'
+import { handleRecipeUrl, getCorrespondingItem } from './utils'
 
 const router = express.Router()
 
@@ -29,7 +29,16 @@ router.post('/parameters', async function(req, res) {
     } else {
         res.status(400).json({message: 'Bad request'})
     }
+})
 
+router.post('/add/recipe', async function(req, res) {
+    const url = req.body.url
+    if(!url.startsWith('https://www.marmiton.org/recettes/')) {
+        res.status(400).json({message: 'Bad request'})
+        return
+    }
+    const recipeID = await handleRecipeUrl(url)
+    res.json(recipeID)
 })
 
 router.get('/lists', function(req, res) {
